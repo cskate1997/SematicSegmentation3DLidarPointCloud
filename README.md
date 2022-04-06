@@ -1,7 +1,6 @@
-# semantic_segmentation
-Semantic Segmentation of LiDAR data
+# Semantic Segmentation of LiDAR data
 
-Course Project for CS541 - Deep Learning (Spring 2022)
+## Course Project for CS541 - Deep Learning (Spring 2022)
 
 Master of Science in Robotics Engineering at [Worcester Polytechnic Institute](https://www.wpi.edu/)
 
