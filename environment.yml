@@ -1,0 +1,10 @@
+name: dl_proj_env
+channels:
+  - defaults
+dependencies:
+  - python=3.6
+  - python-pcl
+  - cython=0.25
+  - open3d
+  - yaml
+  - pyyaml
