@@ -1,2 +1,5 @@
 data/
 results/
+scripts/test/__pycache__/
+scripts/__pycache__/
+
