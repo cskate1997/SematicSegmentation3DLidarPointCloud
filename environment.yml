@@ -1,10 +1,10 @@
-name: dl_proj_env
+name: semseg_env
 channels:
   - defaults
+  - conda-forge
+
 dependencies:
   - python=3.6
-  - python-pcl
   - cython=0.25
-  - open3d
-  - yaml
   - pyyaml
+  - matplotlib
