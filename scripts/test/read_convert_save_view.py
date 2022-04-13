@@ -19,49 +19,53 @@ def read_bin_as_array(path):
     return points
 
 def read_labels(path):
+    # print("path = ", type(path))
     label_pcd = np.fromfile(path, dtype=np.uint32)
-    labels = {}
+    # labels = {}
+    labelList = []
     for i in range(label_pcd.shape[0]):
         label = label_pcd[i] & 0x0000FFFF
-        instance = ((label_pcd[i] & 0xFFFF0000) >> 16)
-        if label not in labels:
+        labelList.append(label)
+        # instance = ((label_pcd[i] & 0xFFFF0000) >> 16)
+        # if label not in labels:
 
-            labels[label] = {}
-            if instance not in labels[label]:
-                labels[label][instance] = 1
-            else:
-                labels[label][instance] += 1
-        else:
-            # labels[label] += 1
-            if instance not in labels[label]:
-                labels[label][instance] = 1
-            else:
-                labels[label][instance] += 1
-    return labels
+        #     labels[label] = {}
+        #     if instance not in labels[label]:
+        #         labels[label][instance] = 1
+        #     else:
+        #         labels[label][instance] += 1
+        # else:
+        #     # labels[label] += 1
+        #     if instance not in labels[label]:
+        #         labels[label][instance] = 1
+        #     else:
+        #         labels[label][instance] += 1
+    # return labels
+    return labelList
 
-def read_labels(path, points, colors):
-    label_pcd = np.fromfile(path, dtype=np.uint32)
-    labels = {}
-    l = []
-    for i in range(label_pcd.shape[0]):
-        label = label_pcd[i] & 0x0000FFFF
-        instance = ((label_pcd[i] & 0xFFFF0000) >> 16)
-        color = ((colors[label][0] & 0xFF) << 16) | ((colors[label][1] & 0xFF) << 8) | (colors[label][2] & 0xFF)
-        l.append([points[i,0], points[i,1], points[i,2], color ])
-        if label not in labels:
+# def read_labels(path, points, colors):
+    # label_pcd = np.fromfile(path, dtype=np.uint32)
+    # labels = {}
+    # l = []
+    # for i in range(label_pcd.shape[0]):
+    #     label = label_pcd[i] & 0x0000FFFF
+    #     instance = ((label_pcd[i] & 0xFFFF0000) >> 16)
+    #     color = ((colors[label][0] & 0xFF) << 16) | ((colors[label][1] & 0xFF) << 8) | (colors[label][2] & 0xFF)
+    #     l.append([points[i,0], points[i,1], points[i,2], color ])
+    #     if label not in labels:
 
-            labels[label] = {}
-            if instance not in labels[label]:
-                labels[label][instance] = 1
-            else:
-                labels[label][instance] += 1
-        else:
-            # labels[label] += 1
-            if instance not in labels[label]:
-                labels[label][instance] = 1
-            else:
-                labels[label][instance] += 1
-    return labels, l
+    #         labels[label] = {}
+    #         if instance not in labels[label]:
+    #             labels[label][instance] = 1
+    #         else:
+    #             labels[label][instance] += 1
+    #     else:
+    #         # labels[label] += 1
+    #         if instance not in labels[label]:
+    #             labels[label][instance] = 1
+    #         else:
+    #             labels[label][instance] += 1
+    # return labels, l
 
 def save_point_cloud_as_pcd(path, cloud):
     cloud.to_file(bytes(path, 'utf-8'))
