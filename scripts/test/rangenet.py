@@ -41,8 +41,9 @@ class RangeNetModel(Model):
 
 if __name__ == '__main__':
     # tf.enable_eager_execution()
-    fileName = "model_summary.txt"
-    sys.stdout = open(fileName, "w")
+
+    # fileName = "model_summary.txt"
+    # sys.stdout = open(fileName, "w")
 
     range_net_model = RangeNetModel()
 
