@@ -91,7 +91,7 @@ class Decoder(Model):
         layers = []
 
         if stride == 2:
-            layers.append(Conv2DTranspose(planes[1], kernel_size = [1, 4], strides = [1, 2], padding='valid', data_format='channels_first'))
+            layers.append(Conv2DTranspose(planes[1], kernel_size = [1, 4], strides = [1, 2], padding='same', data_format='channels_first'))
         else:
             layers.append(Conv2D(planes[1], kernel_size = 3, padding='same', data_format='channels_first'))
         
