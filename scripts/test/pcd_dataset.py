@@ -44,8 +44,8 @@ class Dataset:
     def convert_pcd_image(self, points, labels):
         labels = read_labels(labels)
         labels = np.vectorize(self.label_mapper)(labels)
-        spherical_image = np.zeros((5, HEIGHT, WIDTH))
-        labels_image = np.zeros((20, HEIGHT, WIDTH))
+        spherical_image = np.zeros((HEIGHT, WIDTH, 5))
+        labels_image = np.zeros((HEIGHT, WIDTH, 20))
         Rs = np.linalg.norm(points, axis=1)
         pitches = points[:,2]
         pitches = pitches / Rs
@@ -60,12 +60,12 @@ class Dataset:
         pitches = np.round(pitches).astype(int)
         yaws = np.round(yaws).astype(int)
 
-        spherical_image[0, pitches, yaws] = points[:,0]
-        spherical_image[1, pitches, yaws] = points[:,1]
-        spherical_image[2, pitches, yaws] = points[:,2]
-        spherical_image[3, pitches, yaws] = Rs
-        spherical_image[4, pitches, yaws] = points[:,3]
-        labels_image[labels, pitches, yaws] = 1
+        spherical_image[pitches, yaws, 0] = points[:,0]
+        spherical_image[pitches, yaws, 1] = points[:,1]
+        spherical_image[pitches, yaws, 2] = points[:,2]
+        spherical_image[pitches, yaws, 3] = Rs
+        spherical_image[pitches, yaws, 4] = points[:,3]
+        labels_image[pitches, yaws, labels] = 1
 
         # spherical_image = np.reshape(spherical_image, (1, WIDTH*HEIGHT, 5))
         return spherical_image, labels_image
@@ -106,6 +106,8 @@ class Dataset:
             print(f"Converting Sequence {dir}...")
             if dir == '00':
                 continue
+            if dir == '08':
+                break
             path_to_seq = os.path.join(path, dir)
             path_to_labels = os.path.join(path_to_seq, 'labels')
             path_to_velo= os.path.join(path_to_seq, 'velodyne')
@@ -125,7 +127,7 @@ class Dataset:
                     labels.append(path_to_file_label)
             else:
                 print("no labels")
-            break
+            # break
         print("Length of dataset = ", len(filenames))
         self.dataset_len = len(filenames)
         dataset = tf.data.Dataset.from_tensor_slices(filenames)

@@ -5,27 +5,35 @@ from matplotlib import pyplot as plt
 import tensorflow as tf
 from tensorflow.keras.optimizers import SGD
 from tensorflow.keras.losses import categorical_crossentropy
-
-# class CategoricalCrossentropy(tf.keras.losses.Loss):
-#     def call(self, y_true, y_pred):
-#         return categorical_crossentropy(y_true, y_pred, from_logits=False, label_smoothing=0)
+from tensorflow.keras.utils import multi_gpu_model
+from tensorflow.keras.layers import Input
 
 BATCH_SIZE = 1
+NUM_EPOCHS = 5
 
 if __name__ == "__main__":
-    tf.enable_eager_execution()
     if (len(sys.argv) != 3):
         print("Incorrect Number of Arguments provided.\nValid format: \"python file.py -d {path_to_dataset}\"")
         sys.exit(-1)
-    print("!!!")
+    
+    tf.enable_eager_execution()
+    devices = tf.keras.backend.get_session().list_devices()
+    print(devices)
+    cpu = [device for device in devices if device.device_type.lower() == 'cpu']
+    devices = [device for device in devices if device.device_type.lower() == 'gpu']
+    num_gpu = len(devices)
+    print(cpu)
+    print("GPUs Available: ", num_gpu)
     ind = sys.argv.index("-d")
     path = sys.argv[ind + 1]
     ds = Dataset(path, 'config/semantic-kitti.yaml')
     dataset = ds.get_dataset()
-    
+    dataset = dataset.repeat(NUM_EPOCHS)
+    dataset = dataset.shuffle(ds.get_dataset_len())
     dataset = dataset.batch(BATCH_SIZE)
+    dataset = dataset.prefetch(2)
     data_iter = dataset.make_one_shot_iterator()
-    # dataset = dataset.prefetch(1)
+    
     print("Dataset Ready")
     
     # for item in dataset:
@@ -36,14 +44,24 @@ if __name__ == "__main__":
     #     plt.imshow(image[4,:,:], cmap='gray')
     #     plt.show()
     #     break
-
-    range_net_model = RangeNetModel()
+    if num_gpu > 1:
+        with tf.device(cpu[0].name):
+            range_net_model_single = RangeNetModel()
+            inputs = Input(shape=(64, 1024, 5))
+            outputs = range_net_model_single(inputs)
+            model = tf.keras.Model(inputs=inputs, outputs=outputs)
+            range_net_model_single.summary()
+            model.summary()
+        range_net_model = multi_gpu_model(model, gpus=num_gpu)
+    else:
+        range_net_model = RangeNetModel()
 
     optimizer = SGD(lr=0.005, momentum=0.9, decay=0.0001)
     # loss = CategoricalCrossentropy()
     range_net_model.compile(loss=categorical_crossentropy,
-             optimizer=tf.train.AdamOptimizer(learning_rate=0.005),
+            optimizer=tf.train.AdamOptimizer(learning_rate=0.005),
             #  metrics=[tf.keras.metrics.RootMeanSquaredError()])
-             metrics=['accuracy'])
+            metrics=['accuracy'])
 
-    range_net_model.fit(data_iter, batch_size=BATCH_SIZE, epochs=1, steps_per_epoch=ds.get_dataset_len()//BATCH_SIZE)
+    range_net_model.fit(data_iter, epochs=NUM_EPOCHS, steps_per_epoch=ds.get_dataset_len()//BATCH_SIZE)
+    range_net_model.save('my_model.h5')

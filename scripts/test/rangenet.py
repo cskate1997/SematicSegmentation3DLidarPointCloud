@@ -13,13 +13,13 @@ INPUT_HEIGHT = 64
 INPUT_WIDTH = 1024
 
 class RangeNetModel(Model):
-    def __init__(self, inp_shape=(None, 5, 64, 1024)):
+    def __init__(self, inp_shape=(None, 64, 1024, 5)):
         super(RangeNetModel, self).__init__()
         # self.inp = Input(shape=inp_shape)
         self.encoder = Encoder()
         self.decoder = Decoder()
         self.semantic_head = SegmentationHead()
-        self.softmax = Softmax(axis=1)
+        self.softmax = Softmax(axis=3)
 
 
     def call(self, x):
@@ -29,6 +29,7 @@ class RangeNetModel(Model):
         # print(x, type(x),x[0])
         # for i in x:
         #     print(type(i), i, i[0])
+        
         y = self.encoder(x)
         y = self.decoder(y)
         y = self.semantic_head(y)

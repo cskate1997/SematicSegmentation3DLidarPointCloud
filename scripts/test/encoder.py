@@ -10,14 +10,14 @@ INPUT_HEIGHT = 64
 INPUT_WIDTH = 1024
 
 class BasicBlock(Model):
-    def __init__(self, planes, bn_d=0.01, bn_axis=1):
+    def __init__(self, planes, bn_d=0.01, bn_axis=1, data_format='channels_last'):
         super(BasicBlock, self).__init__()
-
-        self.conv1 = Conv2D(planes[0], kernel_size = 1, strides = 1, padding = "same", use_bias=False, data_format='channels_first')
+        self.data_format = data_format
+        self.conv1 = Conv2D(planes[0], kernel_size = 1, strides = 1, padding = "same", use_bias=False, data_format=data_format)
         self.bn1 = BatchNormalization(axis=bn_axis, momentum=bn_d)
         self.relu1 = LeakyReLU(0.1)
 
-        self.conv2 = Conv2D(planes[1], kernel_size = 3, strides = 1, padding = "same", use_bias=False, data_format='channels_first')
+        self.conv2 = Conv2D(planes[1], kernel_size = 3, strides = 1, padding = "same", use_bias=False, data_format=data_format)
         self.bn2 = BatchNormalization(axis=bn_axis, momentum=bn_d)
         self.relu2 = LeakyReLU(0.1)
 
@@ -43,7 +43,7 @@ class Encoder(Model):
         self.strides = [2, 2, 2, 2, 2]
         self.blocks = [1, 2, 8, 8, 4]
         self.bn_d = 0.01
-        self.data_format='channels_first' 
+        self.data_format='channels_last' 
         self.feature_depth=1024
 
         if self.data_format == 'channels_first':
@@ -51,8 +51,8 @@ class Encoder(Model):
         else:
             self.bn_axis = 3
 
-        self.conv0 = Conv2D(filters=32, kernel_size=3, strides=1, padding='same', 
-                input_shape=(INPUT_DEPTH, INPUT_HEIGHT, INPUT_WIDTH), data_format=self.data_format, use_bias=False)
+
+        self.conv0 = Conv2D(filters=32, kernel_size=3, strides=1, padding='same', data_format=self.data_format, use_bias=False)
         self.bn0 = BatchNormalization(axis = self.bn_axis, momentum=self.bn_d)
         self.lrelu0 = LeakyReLU(alpha=0.1)
 
@@ -91,7 +91,7 @@ class Encoder(Model):
     def make_encoder_layer(self, planes, blocks, stride, bn_d=0.1):
         layers = []
 
-        layers.append(Conv2D(filters=planes[1], kernel_size=3, dilation_rate=1, strides=[1, stride], padding='same', data_format='channels_first', use_bias=False))
+        layers.append(Conv2D(filters=planes[1], kernel_size=3, dilation_rate=1, strides=[1, stride], padding='same', data_format=self.data_format, use_bias=False))
         layers.append(BatchNormalization(axis = self.bn_axis, momentum=self.bn_d))
         layers.append(LeakyReLU(0.1))
 

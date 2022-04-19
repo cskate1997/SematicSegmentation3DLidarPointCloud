@@ -11,14 +11,14 @@ INPUT_HEIGHT = 64
 INPUT_WIDTH = 1024
 
 class BasicBlock(Model):
-    def __init__(self, planes, bn_d=0.01, bn_axis=1):
+    def __init__(self, planes, bn_d=0.01, bn_axis=1, data_format='channels_last'):
         super(BasicBlock, self).__init__()
-
-        self.conv1 = Conv2D(planes[0], kernel_size = 1, strides = 1, padding = "same", use_bias=False, data_format='channels_first')
+        self.data_format = data_format
+        self.conv1 = Conv2D(planes[0], kernel_size = 1, strides = 1, padding = "same", use_bias=False, data_format=data_format)
         self.bn1 = BatchNormalization(axis=bn_axis, momentum=bn_d)
         self.relu1 = LeakyReLU(0.1)
 
-        self.conv2 = Conv2D(planes[1], kernel_size = 3, strides = 1, padding = "same", use_bias=False, data_format='channels_first')
+        self.conv2 = Conv2D(planes[1], kernel_size = 3, strides = 1, padding = "same", use_bias=False, data_format=data_format)
         self.bn2 = BatchNormalization(axis=bn_axis, momentum=bn_d)
         self.relu2 = LeakyReLU(0.1)
 
@@ -45,7 +45,7 @@ class Decoder(Model):
 
         self.strides = [2, 2, 2, 2, 2]
         self.bn_d = 0.01
-        self.data_format='channels_first' 
+        self.data_format='channels_last' 
         self.feature_depth=1024
 
         if self.data_format == 'channels_first':
@@ -91,9 +91,9 @@ class Decoder(Model):
         layers = []
 
         if stride == 2:
-            layers.append(Conv2DTranspose(planes[1], kernel_size = [1, 4], strides = [1, 2], padding='same', data_format='channels_first'))
+            layers.append(Conv2DTranspose(planes[1], kernel_size = [1, 4], strides = [1, 2], padding='same', data_format=self.data_format))
         else:
-            layers.append(Conv2D(planes[1], kernel_size = 3, padding='same', data_format='channels_first'))
+            layers.append(Conv2D(planes[1], kernel_size = 3, padding='same', data_format=self.data_format))
         
         layers.append(BatchNormalization(axis=self.bn_axis, momentum=bn_d))
         layers.append(LeakyReLU(0.1))

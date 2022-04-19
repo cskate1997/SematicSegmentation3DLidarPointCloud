@@ -14,7 +14,7 @@ class SegmentationHead(Model):
     def __init__(self):
         super(SegmentationHead, self).__init__()
         self.dropout = Dropout(rate=0.01)
-        self.conv = Conv2D(filters=20, kernel_size=3, strides=1, padding='same', data_format='channels_first')
+        self.conv = Conv2D(filters=20, kernel_size=3, strides=1, padding='same', data_format='channels_last')
 
     def call(self, x):
         y = self.dropout(x)
