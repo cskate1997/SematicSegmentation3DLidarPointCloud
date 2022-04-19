@@ -7,6 +7,7 @@ from tensorflow.keras.optimizers import SGD
 from tensorflow.keras.losses import categorical_crossentropy
 from tensorflow.keras.utils import multi_gpu_model
 from tensorflow.keras.layers import Input
+import time
 
 BATCH_SIZE = 1
 NUM_EPOCHS = 5
@@ -75,4 +76,5 @@ if __name__ == "__main__":
 
     range_net_model.fit(data_iter, epochs=NUM_EPOCHS, steps_per_epoch=ds.get_dataset_len()//BATCH_SIZE, 
                         validation_data=valid_dataset, validation_steps=1)
-    range_net_model.save('my_model.h5')
+    timestr = time.strftime("%Y_%m_%d-%H:%M:%S")
+    range_net_model.save('outputs/rangenet.weights-'+timestr+'.hdf5')
