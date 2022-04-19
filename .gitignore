@@ -6,4 +6,4 @@ job_outs/
 ace_job.sh
 
 # Ignore File Extensions
-*.out
+# *.out
