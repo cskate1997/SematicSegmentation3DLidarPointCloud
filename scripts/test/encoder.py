@@ -71,19 +71,22 @@ class Encoder(Model):
 
         for i in range(4):
             y = self.enc1[i](y)
-        
+        y = self.dropout(y)
+
         for i in range(5):
             y = self.enc2[i](y)
+        y = self.dropout(y)
 
         for i in range(11):
             y = self.enc3[i](y)
+        y = self.dropout(y)
 
         for i in range(11):
             y = self.enc4[i](y)
+        y = self.dropout(y)
 
         for i in range(7):
             y = self.enc5[i](y)
-        
         y = self.dropout(y)
 
         return y
