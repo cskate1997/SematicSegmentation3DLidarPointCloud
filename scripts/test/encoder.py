@@ -57,39 +57,65 @@ class Encoder(Model):
         self.lrelu0 = LeakyReLU(alpha=0.1)
 
         self.enc1 = self.make_encoder_layer([32, 64], blocks=self.blocks[0], stride=self.strides[0], bn_d=self.bn_d)
+        self.drop1 = Dropout(rate=0.01)
         self.enc2 = self.make_encoder_layer([64, 128], blocks=self.blocks[1], stride=self.strides[1], bn_d=self.bn_d)
+        self.drop2 = Dropout(rate=0.01)
         self.enc3 = self.make_encoder_layer([128, 256], blocks=self.blocks[2], stride=self.strides[2], bn_d=self.bn_d)
+        self.drop3 = Dropout(rate=0.01)
         self.enc4 = self.make_encoder_layer([256, 512], blocks=self.blocks[3], stride=self.strides[3], bn_d=self.bn_d)
+        self.drop4 = Dropout(rate=0.01)
         self.enc5 = self.make_encoder_layer([512, 1024], blocks=self.blocks[4], stride=self.strides[4], bn_d=self.bn_d)
+        self.drop5 = Dropout(rate=0.01)
 
-        self.dropout = Dropout(rate=0.01)
+    def append_skip(self, x, y, skips, os):
+        if y.shape[1] < x.shape[1] or y.shape[2] < x.shape[2]:
+            skips[os] = tf.stop_gradient(x)
+            os *= 2
+        return skips, os
 
     def call(self, x):
+        skips = {}
+        os = 1
         y = self.conv0(x)
         y = self.bn0(y)
         y = self.lrelu0(y)
 
+        x = y
         for i in range(4):
             y = self.enc1[i](y)
-        y = self.dropout(y)
+        skips, os = self.append_skip(x, y, skips, os)
+        y = self.drop1(y)
 
+        x = y
         for i in range(5):
             y = self.enc2[i](y)
-        y = self.dropout(y)
+        skips, os = self.append_skip(x, y, skips, os)
+        y = self.drop2(y)
 
+        x = y
         for i in range(11):
             y = self.enc3[i](y)
-        y = self.dropout(y)
+        skips, os = self.append_skip(x, y, skips, os)
+        y = self.drop3(y)
 
+        x = y
         for i in range(11):
             y = self.enc4[i](y)
-        y = self.dropout(y)
+        skips, os = self.append_skip(x, y, skips, os)
+        y = self.drop4(y)
 
+        x = y
         for i in range(7):
             y = self.enc5[i](y)
-        y = self.dropout(y)
+        skips, os = self.append_skip(x, y, skips, os)
+        y = self.drop5(y)
 
+        self.skips = skips
+        self.os = os
         return y
+
+    def get_skips(self):
+        return self.skips, self.os
 
     def make_encoder_layer(self, planes, blocks, stride, bn_d=0.1):
         layers = []
@@ -108,6 +134,6 @@ if __name__ == '__main__':
 
     encoder = Encoder()
 
-    encoder.build(input_shape=(None, 5, 64, 1024))
-    encoder.call(Input(shape=(5, 64, 1024)))
+    encoder.build(input_shape=(None, 64, 1024, 5))
+    encoder.call(Input(shape=(64, 1024, 5)))
     encoder.summary()

@@ -31,6 +31,12 @@ class RangeNetModel(Model):
         #     print(type(i), i, i[0])
         
         y = self.encoder(x)
+        skips, os = self.encoder.get_skips()
+        for i in skips:
+            print("==============================")
+            print(skips[i].shape)
+
+        self.decoder.set_skips(skips, os)
         y = self.decoder(y)
         y = self.semantic_head(y)
         y = self.softmax(y)
@@ -54,6 +60,7 @@ if __name__ == '__main__':
 
     range_net_model = RangeNetModel()
 
-    range_net_model.build(input_shape=(None, 5, 64, 1024))
-    range_net_model.call(Input(shape=(5, 64, 1024)))
+    range_net_model.build(input_shape=(None, 64, 1024, 5))
+    range_net_model.call(Input(shape=(64, 1024, 5)))
+    
     range_net_model.summary()

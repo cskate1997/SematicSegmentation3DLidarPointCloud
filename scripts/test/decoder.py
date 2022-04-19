@@ -65,28 +65,55 @@ class Decoder(Model):
         # self.conv = Conv2D(filters=20, kernel_size=3, strides=1, padding='same', data_format='channels_first')
 
     def call(self, x):
-        
+        skips = self.skips
+        os = self.os
+        # print("Hi, ", self.skips)
+
         y = self.dec5[0](x)
 
+        x1 = y
         for i in range(3):
             y = self.dec5[1+i](y)
+        # print("------------------", x==y)
+        y, skips, os = self.add_skip(x1, y, skips, os)
 
+        x2 = y
         for i in range(4):
             y = self.dec4[i](y)
+        y, skips, os = self.add_skip(x2, y, skips, os)
         
+        x3 = y
         for i in range(4):
             y = self.dec3[i](y)
+        y, skips, os = self.add_skip(x3, y, skips, os)
         
+        x = y
         for i in range(4):
             y = self.dec2[i](y)
+        y, skips, os = self.add_skip(x, y, skips, os)
         
+        x = y
         for i in range(4):
             y = self.dec1[i](y)
+        y, skips, os = self.add_skip(x, y, skips, os)
 
         y = self.dropout(y)
 
         return y
     
+    def add_skip(self, x, y, skips, os):
+        print("++++++++++++++++++++++++++++", x.shape, y.shape)
+        if y.shape[2] > x.shape[2]:
+            os //= 2
+            # print("Test1: ", y.shape, skips[os].shape, os)
+            y = y + tf.stop_gradient(skips[os])
+            # print("Test1: ", y.shape)
+        return y, skips, os
+
+    def set_skips(self, skips, os):
+        self.skips = skips
+        self.os = os
+
     def make_decoder_layer(self, planes, bn_d=0.01, stride= 2):
         layers = []
 
@@ -107,7 +134,9 @@ if __name__ == '__main__':
     # tf.enable_eager_execution()
 
     decoder = Decoder()
+    decoder.skips = {}
+    decoder.os = 32
 
-    decoder.build(input_shape=(None, 1024, 64, 32))
-    decoder.call(Input(shape=(1024, 64, 32)))
+    decoder.build(input_shape=(None, 64, 32, 1024))
+    decoder.call(Input(shape=(64, 32, 1024)))
     decoder.summary()
