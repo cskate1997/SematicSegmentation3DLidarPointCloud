@@ -13,9 +13,9 @@ INPUT_HEIGHT = 64
 INPUT_WIDTH = 1024
 
 class RangeNetModel(Model):
-    def __init__(self):
+    def __init__(self, inp_shape=(None, 5, 64, 1024)):
         super(RangeNetModel, self).__init__()
-        
+        # self.inp = Input(shape=inp_shape)
         self.encoder = Encoder()
         self.decoder = Decoder()
         self.semantic_head = SegmentationHead()
@@ -23,6 +23,12 @@ class RangeNetModel(Model):
 
 
     def call(self, x):
+        # y = self.inp(x)
+        
+        # print("Input_Shape: ", x.shape)
+        # print(x, type(x),x[0])
+        # for i in x:
+        #     print(type(i), i, i[0])
         y = self.encoder(x)
         y = self.decoder(y)
         y = self.semantic_head(y)
@@ -40,7 +46,7 @@ class RangeNetModel(Model):
         self.semantic_head.summary()
 
 if __name__ == '__main__':
-    # tf.enable_eager_execution()
+    tf.enable_eager_execution()
 
     # fileName = "model_summary.txt"
     # sys.stdout = open(fileName, "w")
