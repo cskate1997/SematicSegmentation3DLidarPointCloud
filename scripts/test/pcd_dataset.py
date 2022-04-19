@@ -17,11 +17,13 @@ WIDTH = 1024
 
 class Dataset:
     def __init__ (self, dataset_path, yaml_path):
-        
+        self.dataset_path = dataset_path
+        self.yaml_path = yaml_path
         self.yaml = self.read_yaml(yaml_path)
-        self.dataset = self.initialize_dataset(dataset_path)
+        # self.dataset = self.initialize_dataset(dataset_path)
         self.learning_map_inv = self.yaml['learning_map_inv']
         self.learning_map = self.yaml['learning_map']
+        self.sequences = self.get_sequences()
         # print(type(self.learning_map_inv))
 
     def label_mapper(self, x):
@@ -29,7 +31,6 @@ class Dataset:
 
     def label_map_inverter(self, x):
         return self.learning_map_inv[x]
-
 
     def read_yaml(self, path):
         with open(path, "r") as stream:
@@ -82,21 +83,73 @@ class Dataset:
         
         return [image, labels]
 
-    def initialize_dataset(self, path):
+    def get_sequences(self):
+        path = self.dataset_path
+        if not hasattr(self, 'sequences'):
+            print("Sequence is none, getting sequences")
+            dirs = os.listdir(path)
+            if 'sequences' not in dirs:
+                print("Sequences folder not found in dataset path, please check the path")
+                return
+            # print("Starting to convert point clouds in range images")
 
-        
-        dirs = os.listdir(path)
-        if 'sequences' not in dirs:
-            print("Sequences folder not found in dataset path, please check the path")
-            return
-        print("Starting to convert point clouds in range images")
+            ind = dirs.index('sequences')
+            path = os.path.join(path, dirs[ind])
+            path = os.path.abspath(path)
+            self.sequence_path = path
+            # print("Path = ", path)
+            dirs = os.listdir(path)
+            dirs.sort()
+            return dirs
+        else:
+            return self.sequences
 
-        ind = dirs.index('sequences')
-        path = os.path.join(path, dirs[ind])
-        path = os.path.abspath(path)
-        print("Path = ", path)
-        dirs = os.listdir(path)
-        dirs.sort()
+    def init_train_data(self, dirs):
+        print("Initializing Training dataset")
+        self.train_dirs = dirs
+        self.train_dataset, self.train_len = self.initialize_dataset(dirs)
+
+    def init_valid_data(self, dirs):
+        print("Initializing Validation dataset")
+        self.valid_dirs = dirs
+        self.valid_dataset, self.valid_len = self.initialize_dataset(dirs)
+
+    def init_test_data(self, dirs):
+        self.test_dirs = dirs
+        print("Initializing Testing dataset")
+        self.test_dataset, self.test_len = self.initialize_dataset(dirs)
+
+    def get_train_data(self):
+        if not hasattr(self, 'train_dataset'):
+            print("Training Dataset is not initialized")
+            return None
+        else:
+            return self.train_dataset
+
+    def get_valid_data(self):
+        if not hasattr(self, 'valid_dataset'):
+            print("Validation Dataset is not initialized")
+            return None
+        else:
+            return self.valid_dataset
+
+    def get_test_data(self):
+        if not hasattr(self, 'test_dataset'):
+            print("Testing Dataset is not initialized")
+            return None
+        else:
+            return self.test_dataset
+
+    def get_dataset_len(self, typ='train'):
+        if typ == 'train':
+            return self.train_len
+        if typ == 'valid':
+            return self.valid_len
+        if typ == 'test':
+            return self.test_len
+
+    def initialize_dataset(self, dirs):   
+        path = self.sequence_path
         print("Dirs = ", dirs)
 
         filenames = []
@@ -104,10 +157,6 @@ class Dataset:
         
         for dir in dirs:
             print(f"Converting Sequence {dir}...")
-            if dir == '00':
-                continue
-            if dir == '08':
-                break
             path_to_seq = os.path.join(path, dir)
             path_to_labels = os.path.join(path_to_seq, 'labels')
             path_to_velo= os.path.join(path_to_seq, 'velodyne')
@@ -129,16 +178,12 @@ class Dataset:
                 print("no labels")
             # break
         print("Length of dataset = ", len(filenames))
-        self.dataset_len = len(filenames)
+        dataset_len = len(filenames)
         dataset = tf.data.Dataset.from_tensor_slices(filenames)
         dataset = dataset.map(lambda x: tf.py_func(self.parse_function, [x], [tf.double, tf.double]))
-        return dataset
+        return dataset, dataset_len
 
-    def get_dataset_len(self):
-        return self.dataset_len
 
-    def get_dataset(self):
-        return self.dataset
     
 if __name__ == '__main__':
     if (len(sys.argv) != 3):

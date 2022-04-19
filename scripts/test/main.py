@@ -12,29 +12,39 @@ BATCH_SIZE = 1
 NUM_EPOCHS = 5
 
 if __name__ == "__main__":
+    tf.enable_eager_execution()
     if (len(sys.argv) != 3):
         print("Incorrect Number of Arguments provided.\nValid format: \"python file.py -d {path_to_dataset}\"")
         sys.exit(-1)
-    
-    tf.enable_eager_execution()
-    devices = tf.keras.backend.get_session().list_devices()
-    print(devices)
-    cpu = [device for device in devices if device.device_type.lower() == 'cpu']
-    devices = [device for device in devices if device.device_type.lower() == 'gpu']
-    num_gpu = len(devices)
-    print(cpu)
+    # devices = tf.keras.backend.get_session().list_devices()
+    # print(devices)
+    # cpu = [device for device in devices if device.device_type.lower() == 'cpu']
+    # devices = [device for device in devices if device.device_type.lower() == 'gpu']
+    # num_gpu = len(devices)
+    num_gpu = 1
+    # print(cpu)
     print("GPUs Available: ", num_gpu)
+    print("="*24,"Initializing Dataset","="*24)
     ind = sys.argv.index("-d")
     path = sys.argv[ind + 1]
     ds = Dataset(path, 'config/semantic-kitti.yaml')
-    dataset = ds.get_dataset()
+    sequences = ds.get_sequences()
+    print("Sequences: ", sequences)
+    ds.init_train_data(sequences[1:8])
+    print("Training Sequences: ", ds.train_dirs)
+    ds.init_valid_data(sequences[8:10])
+    print("Validation Sequences: ", ds.valid_dirs)
+    ds.init_test_data(sequences[0:1])
+    print("Testing Sequences: ", ds.test_dirs)
+    dataset = ds.get_train_data()
+    valid_dataset = ds.get_valid_data()
+    test_dataset = ds.get_test_data()
     dataset = dataset.repeat(NUM_EPOCHS)
-    dataset = dataset.shuffle(ds.get_dataset_len())
+    # dataset = dataset.shuffle(100)
     dataset = dataset.batch(BATCH_SIZE)
     dataset = dataset.prefetch(2)
     data_iter = dataset.make_one_shot_iterator()
-    
-    print("Dataset Ready")
+    print("="*24,"Dataset Ready","="*24)
     
     # for item in dataset:
     #     print(type(item[0]), item[0].shape)
@@ -63,5 +73,6 @@ if __name__ == "__main__":
             #  metrics=[tf.keras.metrics.RootMeanSquaredError()])
             metrics=['accuracy'])
 
-    range_net_model.fit(data_iter, epochs=NUM_EPOCHS, steps_per_epoch=ds.get_dataset_len()//BATCH_SIZE)
+    range_net_model.fit(data_iter, epochs=NUM_EPOCHS, steps_per_epoch=ds.get_dataset_len()//BATCH_SIZE, 
+                        validation_data=valid_dataset, validation_steps=1)
     range_net_model.save('my_model.h5')
