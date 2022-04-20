@@ -32,10 +32,6 @@ class RangeNetModel(Model):
         
         y = self.encoder(x)
         skips, os = self.encoder.get_skips()
-        for i in skips:
-            print("==============================")
-            print(skips[i].shape)
-
         self.decoder.set_skips(skips, os)
         y = self.decoder(y)
         y = self.semantic_head(y)

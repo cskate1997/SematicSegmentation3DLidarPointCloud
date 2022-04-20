@@ -24,7 +24,7 @@ class BasicBlock(Model):
 
     def call(self, x):
         res = x
-        # print("X shape ", x.shape)
+        
         y = self.conv1(x)
         y = self.bn1(y)
         y = self.relu1(y)
@@ -32,7 +32,7 @@ class BasicBlock(Model):
         y = self.conv2(y)
         y = self.bn2(y)
         y = self.relu2(y)
-        # print("Y shape ", y.shape)
+        
         y += res
 
         return y
@@ -67,25 +67,22 @@ class Decoder(Model):
     def call(self, x):
         skips = self.skips
         os = self.os
-        # print("Hi, ", self.skips)
 
         y = self.dec5[0](x)
 
-        x1 = y
         for i in range(3):
             y = self.dec5[1+i](y)
-        # print("------------------", x==y)
-        y, skips, os = self.add_skip(x1, y, skips, os)
+        y, skips, os = self.add_skip(x, y, skips, os)
 
-        x2 = y
+        x = y
         for i in range(4):
             y = self.dec4[i](y)
-        y, skips, os = self.add_skip(x2, y, skips, os)
+        y, skips, os = self.add_skip(x, y, skips, os)
         
-        x3 = y
+        x = y
         for i in range(4):
             y = self.dec3[i](y)
-        y, skips, os = self.add_skip(x3, y, skips, os)
+        y, skips, os = self.add_skip(x, y, skips, os)
         
         x = y
         for i in range(4):
@@ -102,12 +99,9 @@ class Decoder(Model):
         return y
     
     def add_skip(self, x, y, skips, os):
-        print("++++++++++++++++++++++++++++", x.shape, y.shape)
         if y.shape[2] > x.shape[2]:
             os //= 2
-            # print("Test1: ", y.shape, skips[os].shape, os)
             y = y + tf.stop_gradient(skips[os])
-            # print("Test1: ", y.shape)
         return y, skips, os
 
     def set_skips(self, skips, os):
