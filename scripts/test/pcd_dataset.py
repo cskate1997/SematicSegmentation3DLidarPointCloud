@@ -24,11 +24,10 @@ class Dataset:
         self.learning_map_inv = self.yaml['learning_map_inv']
         self.learning_map = self.yaml['learning_map']
         self.sequences = self.get_sequences()
+        self.color_map = self.yaml['color_map']
         # print(type(self.learning_map_inv))
         self.plt1 = plt.figure()
-        self.plt2 = plt.figure()
         self.ax1 = self.plt1.add_subplot(111)
-        self.ax2 = self.plt2.add_subplot(111)
         
 
     def label_mapper(self, x):
@@ -76,28 +75,21 @@ class Dataset:
         # spherical_image = np.reshape(spherical_image, (1, WIDTH*HEIGHT, 5))
         return spherical_image, labels_image
 
-    def show(self, img, ip):
-        height, width = img.shape
-        rgb_img = np.zeros((height, width, 3))
-        rgb_ip = np.zeros((height, width, 3))
-        color_map = self.yaml['color_map']
-        for i in range(height):
-            for j in range(width):
-                # print(color_map[self.learning_map_inv[img[i, j]]] , color_map[self.learning_map_inv[ip[i, j]]])
-                rgb_img[i,j,:] = color_map[self.learning_map_inv[img[i, j]]]
-                rgb_ip[i,j,:] = color_map[self.learning_map_inv[ip[i, j]]]
-        # print("MaxVals", np.max(rgb_img), np.max(rgb_ip), np.min(rgb_img), np.min(rgb_ip))
+    def get_colors(self, x):
+        ret = np.array(self.color_map[self.learning_map_inv[x]])
+        return ret[2], ret[1], ret[0]
         
-        # self.plt1.imshow(rgb_img)
+
+    def show(self, img, ip):
+        zeros = np.ones(img.shape)
+        x = np.concatenate((ip, zeros, img), axis=0)
+        rgb_img = np.vectorize(self.get_colors, otypes=[int, int, int])(x)
+        rgb_img = np.array(rgb_img)
+        rgb_img = np.transpose(rgb_img, (1, 2, 0))
+        rgb_img[64:64*2,:,:] = np.ones((64,1024,3)) * 255
         self.im1 = self.ax1.imshow(rgb_img)
-        self.im2 = self.ax2.imshow(rgb_ip)
-        # self.plt2.imshow(rgb_ip)
-        # plt.show(block=False)
-        # plt.pause(0.03)
         self.plt1.canvas.draw()
-        self.plt2.canvas.draw()
         self.plt1.canvas.flush_events()
-        self.plt2.canvas.flush_events()
         plt.show(block=False)
 
 
