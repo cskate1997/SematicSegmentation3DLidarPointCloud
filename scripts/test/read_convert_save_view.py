@@ -1,7 +1,7 @@
 import pcl
 import numpy as np
 import yaml
-import pcl.pcl_visualization
+# import pcl.pcl_visualization
 
 def read_yaml_color(path):
     with open(path, "r") as stream:

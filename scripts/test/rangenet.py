@@ -23,6 +23,7 @@ class RangeNetModel(Model):
 
 
     def call(self, x):
+        # print("X Shape: ", x.shape, x)
         # y = self.inp(x)
         
         # print("Input_Shape: ", x.shape)

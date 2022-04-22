@@ -22,6 +22,7 @@ class BasicBlock(Model):
         self.relu2 = LeakyReLU(0.1)
 
     def call(self, x):
+        # print("X Shape: ", x.shape)
         res = x
         # print("X shape ", x.shape)
         y = self.conv1(x)
@@ -52,7 +53,7 @@ class Encoder(Model):
             self.bn_axis = 3
 
 
-        self.conv0 = Conv2D(filters=32, kernel_size=3, strides=1, padding='same', data_format=self.data_format, use_bias=False)
+        self.conv0 = Conv2D(filters=32, kernel_size=3, strides=1, padding='same', data_format=self.data_format, use_bias=False, input_shape=(64, 1024, 5))
         self.bn0 = BatchNormalization(axis = self.bn_axis, momentum=self.bn_d)
         self.lrelu0 = LeakyReLU(alpha=0.1)
 
@@ -68,12 +69,17 @@ class Encoder(Model):
         self.drop5 = Dropout(rate=0.01)
 
     def append_skip(self, x, y, skips, os):
+        # print("Shapes: ", x.shape, y.shape)
         if y.shape[1] < x.shape[1] or y.shape[2] < x.shape[2]:
             skips[os] = tf.stop_gradient(x)
             os *= 2
         return skips, os
 
     def call(self, x):
+        # print("X shape", x.shape, x)
+        # x = x[0]
+        # print("X shape", x.shape, x)
+
         skips = {}
         os = 1
         y = self.conv0(x)

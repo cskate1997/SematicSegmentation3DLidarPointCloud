@@ -73,10 +73,11 @@ class Dataset:
 
     def parse_function(self, filename):
         filename, labels = filename[0], filename[1]
-        filename = bytes.decode(filename)
+        # print("="*20+"Filename, Label: ", filename, labels)
+        filename = filename.numpy()
         
-        labels = bytes.decode(labels)
-        
+        labels = labels.numpy()
+        # print("="*20+"Filename, Label: ", filename, labels)
 
         points = read_bin_as_array(filename)
         image, labels = self.convert_pcd_image(points, labels)
@@ -172,15 +173,17 @@ class Dataset:
                     path_to_file = os.path.join(path_to_velo, file)
                     
                     path_to_file_label = os.path.join(path_to_labels, file.split(".")[0]+".label")
-                    filenames.append([tf.constant(path_to_file), tf.constant(path_to_file_label)])
+                    filenames.append([path_to_file, path_to_file_label])
                     labels.append(path_to_file_label)
             else:
                 print("no labels")
             # break
         print("Length of dataset = ", len(filenames))
         dataset_len = len(filenames)
+        np.random.shuffle(filenames)
         dataset = tf.data.Dataset.from_tensor_slices(filenames)
-        dataset = dataset.map(lambda x: tf.py_func(self.parse_function, [x], [tf.double, tf.double]))
+        dataset = dataset.map(lambda x: tf.py_function(self.parse_function, [x], [tf.float32, tf.float32]))
+
         return dataset, dataset_len
 
 
