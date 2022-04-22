@@ -25,6 +25,11 @@ class Dataset:
         self.learning_map = self.yaml['learning_map']
         self.sequences = self.get_sequences()
         # print(type(self.learning_map_inv))
+        self.plt1 = plt.figure()
+        self.plt2 = plt.figure()
+        self.ax1 = self.plt1.add_subplot(111)
+        self.ax2 = self.plt2.add_subplot(111)
+        
 
     def label_mapper(self, x):
         return self.learning_map[x]
@@ -71,6 +76,31 @@ class Dataset:
         # spherical_image = np.reshape(spherical_image, (1, WIDTH*HEIGHT, 5))
         return spherical_image, labels_image
 
+    def show(self, img, ip):
+        height, width = img.shape
+        rgb_img = np.zeros((height, width, 3))
+        rgb_ip = np.zeros((height, width, 3))
+        color_map = self.yaml['color_map']
+        for i in range(height):
+            for j in range(width):
+                # print(color_map[self.learning_map_inv[img[i, j]]] , color_map[self.learning_map_inv[ip[i, j]]])
+                rgb_img[i,j,:] = color_map[self.learning_map_inv[img[i, j]]]
+                rgb_ip[i,j,:] = color_map[self.learning_map_inv[ip[i, j]]]
+        # print("MaxVals", np.max(rgb_img), np.max(rgb_ip), np.min(rgb_img), np.min(rgb_ip))
+        
+        # self.plt1.imshow(rgb_img)
+        self.im1 = self.ax1.imshow(rgb_img)
+        self.im2 = self.ax2.imshow(rgb_ip)
+        # self.plt2.imshow(rgb_ip)
+        # plt.show(block=False)
+        # plt.pause(0.03)
+        self.plt1.canvas.draw()
+        self.plt2.canvas.draw()
+        self.plt1.canvas.flush_events()
+        self.plt2.canvas.flush_events()
+        plt.show(block=False)
+
+
     def parse_function(self, filename):
         filename, labels = filename[0], filename[1]
         # print("="*20+"Filename, Label: ", filename, labels)
@@ -105,20 +135,20 @@ class Dataset:
         else:
             return self.sequences
 
-    def init_train_data(self, dirs):
+    def init_train_data(self, dirs, shuffle=True):
         print("Initializing Training dataset")
         self.train_dirs = dirs
-        self.train_dataset, self.train_len = self.initialize_dataset(dirs)
+        self.train_dataset, self.train_len = self.initialize_dataset(dirs, shuffle)
 
-    def init_valid_data(self, dirs):
+    def init_valid_data(self, dirs, shuffle=True):
         print("Initializing Validation dataset")
         self.valid_dirs = dirs
-        self.valid_dataset, self.valid_len = self.initialize_dataset(dirs)
+        self.valid_dataset, self.valid_len = self.initialize_dataset(dirs, shuffle)
 
-    def init_test_data(self, dirs):
+    def init_test_data(self, dirs, shuffle=False):
         self.test_dirs = dirs
         print("Initializing Testing dataset")
-        self.test_dataset, self.test_len = self.initialize_dataset(dirs)
+        self.test_dataset, self.test_len = self.initialize_dataset(dirs, shuffle)
 
     def get_train_data(self):
         if not hasattr(self, 'train_dataset'):
@@ -149,7 +179,7 @@ class Dataset:
         if typ == 'test':
             return self.test_len
 
-    def initialize_dataset(self, dirs):   
+    def initialize_dataset(self, dirs, shuffle=False):   
         path = self.sequence_path
         print("Dirs = ", dirs)
 
@@ -180,7 +210,8 @@ class Dataset:
             # break
         print("Length of dataset = ", len(filenames))
         dataset_len = len(filenames)
-        np.random.shuffle(filenames)
+        if shuffle:
+            np.random.shuffle(filenames)
         dataset = tf.data.Dataset.from_tensor_slices(filenames)
         dataset = dataset.map(lambda x: tf.py_function(self.parse_function, [x], [tf.float32, tf.float32]))
 

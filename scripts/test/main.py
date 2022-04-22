@@ -12,6 +12,31 @@ import time
 BATCH_SIZE = 1
 NUM_EPOCHS = 5
 
+def test_visualize():
+    for step in test_dataset:
+        # print(step[0].shape, step[1].shape)
+        ip = step[0]
+        y = step[1]
+        y_hat = range_net_model(ip)
+        y_hat = tf.argmax(y_hat, axis=3)
+        y_hat = y_hat.numpy()
+        y_hat = y_hat.reshape(64,1024)
+        y = tf.argmax(y, axis=3)
+        ds.show(y_hat, y.numpy().reshape(64,1024))
+        print(y_hat.shape)
+        # break
+
+def test():
+    range_net_model.evaluate(test_dataset)
+
+def train():
+    checkpointer = tf.keras.callbacks.ModelCheckpoint(filepath='outputs/rangenet.weights.checkpoint-'+time.strftime("%Y_%m_%d-%H:%M:%S")+'.hdf5', save_weights_only=True, verbose=1,save_best_only=True)
+
+    range_net_model.fit(data_iter, epochs=NUM_EPOCHS, steps_per_epoch=ds.get_dataset_len()//BATCH_SIZE, 
+                        validation_data=valid_dataset, validation_steps=5, callbacks=[checkpointer])
+    timestr = time.strftime("%Y_%m_%d-%H:%M:%S")
+    range_net_model.save_weights('outputs/rangenet.weights-'+timestr+'.hdf5')
+
 if __name__ == "__main__":
     # tf.enable_eager_execution()
     if (len(sys.argv) != 3):
@@ -45,10 +70,14 @@ if __name__ == "__main__":
     dataset = dataset.batch(BATCH_SIZE)
     dataset = dataset.prefetch(1)
     data_iter = dataset
-    valid_dataset = valid_dataset.repeat(NUM_EPOCHS)
+    # valid_dataset = valid_dataset.repeat(NUM_EPOCHS)
     # dataset = dataset.shuffle(100)
     valid_dataset = valid_dataset.batch(BATCH_SIZE)
     valid_dataset = valid_dataset.prefetch(1)
+    # test_dataset = test_dataset.repeat(NUM_EPOCHS)
+    # dataset = dataset.shuffle(100)
+    test_dataset = test_dataset.batch(BATCH_SIZE)
+    test_dataset = test_dataset.prefetch(1)
     print("="*24,"Dataset Ready","="*24)
     
     # for item in dataset:
@@ -83,9 +112,6 @@ if __name__ == "__main__":
             #  metrics=[tf.keras.metrics.RootMeanSquaredError()])
             metrics=['accuracy', tf.keras.metrics.MeanIoU(num_classes=20)], run_eagerly=True)
 
-    checkpointer = tf.keras.callbacks.ModelCheckpoint(filepath='outputs/rangenet.weights.checkpoint-'+time.strftime("%Y_%m_%d-%H:%M:%S")+'.hdf5', save_weights_only=True, verbose=1,save_best_only=True)
+    range_net_model.load_weights('outputs/best_weights.hdf5')
 
-    range_net_model.fit(data_iter, epochs=NUM_EPOCHS, steps_per_epoch=ds.get_dataset_len()//BATCH_SIZE, 
-                        validation_data=valid_dataset, validation_steps=5, callbacks=[checkpointer])
-    timestr = time.strftime("%Y_%m_%d-%H:%M:%S")
-    range_net_model.save_weights('outputs/rangenet.weights-'+timestr+'.hdf5')
+    test_visualize()
