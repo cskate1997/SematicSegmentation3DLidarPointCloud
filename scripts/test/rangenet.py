@@ -13,13 +13,14 @@ INPUT_HEIGHT = 64
 INPUT_WIDTH = 1024
 
 class RangeNetModel(Model):
-    def __init__(self, inp_shape=(None, 64, 1024, 5)):
+    def __init__(self, inp_shape=(None, 64, 1024, 5), rnn_flag=False):
         super(RangeNetModel, self).__init__()
         # self.inp = Input(shape=inp_shape)
         self.encoder = Encoder()
         self.decoder = Decoder()
         self.semantic_head = SegmentationHead()
         self.softmax = Softmax(axis=3)
+        self.rnn_flag = rnn_flag
 
 
     def call(self, x):
@@ -32,7 +33,21 @@ class RangeNetModel(Model):
         #     print(type(i), i, i[0])
         
         y = self.encoder(x)
+        
         skips, os = self.encoder.get_skips()
+
+        if self.rnn_flag:
+            flag = False
+            try:
+                cur_y = y.numpy()
+                flag = True
+            except:
+                pass
+            if flag:
+                if hasattr(self, 'prev_y'):
+                    y = y + tf.constant(self.prev_y)
+                self.prev_y = cur_y
+
         self.decoder.set_skips(skips, os)
         y = self.decoder(y)
         y = self.semantic_head(y)
@@ -50,7 +65,7 @@ class RangeNetModel(Model):
         self.semantic_head.summary()
 
 if __name__ == '__main__':
-    tf.enable_eager_execution()
+    # tf.enable_eager_execution()
 
     # fileName = "model_summary.txt"
     # sys.stdout = open(fileName, "w")

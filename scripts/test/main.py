@@ -1,3 +1,6 @@
+# import os
+# os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
+
 import sys
 from rangenet import RangeNetModel
 from pcd_dataset import Dataset
@@ -23,7 +26,7 @@ def test_visualize():
         y_hat = y_hat.reshape(64,1024)
         y = tf.argmax(y, axis=3)
         ds.show(y_hat, y.numpy().reshape(64,1024))
-        print(y_hat.shape)
+        # print(y_hat.shape)
         # break
 
 def test():
@@ -100,7 +103,7 @@ if __name__ == "__main__":
     # else:
     #     range_net_model = RangeNetModel()
 
-    range_net_model_single = RangeNetModel()
+    range_net_model_single = RangeNetModel(rnn_flag=True)
     inputs = Input(shape=(64, 1024, 5))
     outputs = range_net_model_single(inputs)
     range_net_model = tf.keras.Model(inputs=inputs, outputs=outputs)
@@ -112,6 +115,8 @@ if __name__ == "__main__":
             #  metrics=[tf.keras.metrics.RootMeanSquaredError()])
             metrics=['accuracy', tf.keras.metrics.MeanIoU(num_classes=20)], run_eagerly=True)
 
-    range_net_model.load_weights('outputs/best_weights.hdf5')
+    range_net_model.load_weights('outputs/rnn_b1e5_best.hdf5')
 
+    # train()
+    # test()
     test_visualize()
