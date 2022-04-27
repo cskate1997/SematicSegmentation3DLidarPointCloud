@@ -6,18 +6,40 @@ import tensorflow as tf
 class PixelShuffle(Layer):
     def __init__(self, upscaling_factor=2):
         super(PixelShuffle, self).__init__()
-        self.upscaling_factor = upscaling_factor
+        self.scale = upscaling_factor
 
     def call(self, x):
         [_, height, width, channel] = x.shape
-        n_height = height*self.upscaling_factor
-        n_width = width*self.upscaling_factor
-        n_channel = channel // (self.upscaling_factor**2)
-        y = tf.zeros((_, n_height, n_width, n_channel), dtype=tf.float32)
-        for i in range(height):
-            for j in range(width):
-                y[:, self.upscaling_factor*i:self.upscaling_factor*i+self.upscaling_factor,
-                self.upscaling_factor*j:self.upscaling_factor*j+self.upscaling_factor] = tf.reshape(x[:i, j,:], (_, self.upscaling_factor, self.upscaling_factor, n_channel))
+
+        if _ is None:
+            # pass
+            y = self.pixelShuffle(tf.squeeze(x, axis=0))
+            shape = tf.shape(y)
+            op_shape = [-1, shape[0], shape[1], shape[2]]
+            y = tf.reshape(y, op_shape)
+        else:
+            flag = False
+            for batch in range(_):
+                if not flag:
+                    y = self.pixelShuffle(x[batch])
+                    shape = tf.shape(y)
+                    op_shape = [1, shape[0], shape[1], shape[2]]
+                    y = tf.reshape(y, op_shape)
+                    flag = True
+                else:
+                    y_temp = self.pixelShuffle(x[batch])
+                    shape = tf.shape(y_temp)
+                    op_shape = [1, shape[0], shape[1], shape[2]]
+                    y_temp = tf.reshape(y_temp, op_shape)
+                    y = tf.concat([y, y_temp], axis=0)
+        return y
+
+    def pixelShuffle(self, x):
+        [h, w, c] = x.shape
+        nh = h*self.scale
+        nw = w*self.scale
+        nc = c // (self.scale**2)
+        y = tf.reshape(x, (nh,nw,nc))
         return y
 if __name__ == '__main__':
     pixelLayer = PixelShuffle(2)
