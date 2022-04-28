@@ -14,7 +14,6 @@ FOV = abs(FOV_UP) + abs(FOV_DOWN)
 
 HEIGHT = 64
 WIDTH = 1024
-
 class Dataset:
     def __init__ (self, dataset_path, yaml_path):
         self.dataset_path = dataset_path
@@ -25,10 +24,13 @@ class Dataset:
         self.learning_map = self.yaml['learning_map']
         self.sequences = self.get_sequences()
         self.color_map = self.yaml['color_map']
-        # print(type(self.learning_map_inv))
+        # # print(type(self.learning_map_inv))
+        # self.plt1 = plt.figure()
+        # self.ax1 = self.plt1.add_subplot(111)
+        
+    def init_plot(self):
         self.plt1 = plt.figure()
         self.ax1 = self.plt1.add_subplot(111)
-        
 
     def label_mapper(self, x):
         return self.learning_map[x]
@@ -45,6 +47,15 @@ class Dataset:
                 print(exc)
         # colors = yamlFile['color_map']
         return yamlFile
+
+    def get_class_weights(self):
+        weights = np.zeros(20)
+        for cls, ratio in self.yaml['content'].items():
+            i = self.label_mapper(cls)
+            weights[i] += ratio
+        weights = 1 / (weights + 0.001)
+        weights[0] = 0
+        return weights
 
     def convert_pcd_image(self, points, labels):
         labels = read_labels(labels)
@@ -80,17 +91,23 @@ class Dataset:
         return ret[2], ret[1], ret[0]
         
 
-    def show(self, img, ip):
+    def show(self, img, ip, im2=None):
         zeros = np.ones(img.shape)
-        x = np.concatenate((ip, zeros, img), axis=0)
+        if im2 is None:
+            x = np.concatenate((ip, zeros, img), axis=0)
+        else:
+            x = np.concatenate((im2, zeros, ip, zeros, img), axis=0)
         rgb_img = np.vectorize(self.get_colors, otypes=[int, int, int])(x)
         rgb_img = np.array(rgb_img)
         rgb_img = np.transpose(rgb_img, (1, 2, 0))
         rgb_img[64:64*2,:,:] = np.ones((64,1024,3)) * 255
+        if im2 is not None:
+            rgb_img[64*3:64*4,:,:] = np.ones((64,1024,3)) * 255
         self.im1 = self.ax1.imshow(rgb_img)
         self.plt1.canvas.draw()
         self.plt1.canvas.flush_events()
         plt.show(block=False)
+        plt.pause(0.03)
 
 
     def parse_function(self, filename):
@@ -208,7 +225,6 @@ class Dataset:
         dataset = dataset.map(lambda x: tf.py_function(self.parse_function, [x], [tf.float32, tf.float32]))
 
         return dataset, dataset_len
-
 
     
 if __name__ == '__main__':

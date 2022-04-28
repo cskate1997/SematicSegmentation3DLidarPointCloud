@@ -1,7 +1,10 @@
+from shutil import ExecError
 import numpy as np
 from tensorflow.keras.layers import Layer, Input
 from numpy.core.fromnumeric import reshape
 import tensorflow as tf
+from matplotlib import pyplot as plt
+from matplotlib import colors
 
 class PixelShuffle(Layer):
     def __init__(self, upscaling_factor=2):
@@ -10,44 +13,25 @@ class PixelShuffle(Layer):
 
     def call(self, x):
         [_, height, width, channel] = x.shape
-
-        if _ is None:
-            # pass
-            y = self.pixelShuffle(tf.squeeze(x, axis=0))
-            shape = tf.shape(y)
-            op_shape = [-1, shape[0], shape[1], shape[2]]
-            y = tf.reshape(y, op_shape)
-        else:
-            flag = False
-            for batch in range(_):
-                if not flag:
-                    y = self.pixelShuffle(x[batch])
-                    shape = tf.shape(y)
-                    op_shape = [1, shape[0], shape[1], shape[2]]
-                    y = tf.reshape(y, op_shape)
-                    flag = True
-                else:
-                    y_temp = self.pixelShuffle(x[batch])
-                    shape = tf.shape(y_temp)
-                    op_shape = [1, shape[0], shape[1], shape[2]]
-                    y_temp = tf.reshape(y_temp, op_shape)
-                    y = tf.concat([y, y_temp], axis=0)
+        y = tf.reshape(x, (tf.shape(x)[0], tf.shape(x)[1], tf.shape(x)[2], self.scale, self.scale))
+        y = tf.transpose(y, (0, 1, 3, 2, 4))
+        y = tf.reshape(y, (tf.shape(x)[0], height*self.scale, width*self.scale, channel//(self.scale**2)))
         return y
 
-    def pixelShuffle(self, x):
-        [h, w, c] = x.shape
-        nh = h*self.scale
-        nw = w*self.scale
-        nc = c // (self.scale**2)
-        y = tf.reshape(x, (nh,nw,nc))
-        return y
 if __name__ == '__main__':
     pixelLayer = PixelShuffle(2)
-    input = Input(shape=(64, 32, 1024))
+    input = Input(shape=(64, 32, 4))
     output = pixelLayer(input)
     model = tf.keras.Model(inputs=input, outputs=output)
-    # model.summary()
-    image = np.ones((64,32,1024))
+    model.summary()
+    image = np.ones((1, 64,32,4))
+    for i in range(0,4):
+        image[0,:,:,i] = (i+1)
     y = model(image)
     print(y.shape)
+    y = np.reshape(y, (128,64))
+    colormap = colors.ListedColormap(["red","#39FF14","blue","yellow"])
+    plt.figure()
+    plt.imshow(y[:,:], cmap=colormap)
+    plt.show()
 
