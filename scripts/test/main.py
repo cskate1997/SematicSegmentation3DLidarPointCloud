@@ -12,6 +12,7 @@ from tensorflow.keras.losses import categorical_crossentropy
 from tensorflow.keras.layers import Input
 import time
 import numpy as np
+from CustomIoU import CustomIoU
 
 BATCH_SIZE = 4
 NUM_EPOCHS = 5
@@ -157,13 +158,23 @@ if __name__ == "__main__":
     range_net_model = tf.keras.Model(inputs=inputs, outputs=outputs)
 
     class_weights = ds.get_class_weights()
+    
+    
+    eval_ignore_list = [0]
 
     optimizer = SGD(learning_rate=0.005, momentum=0.9, decay=0.0001)
     # loss = CategoricalCrossentropy()
     range_net_model.compile(loss=categorical_crossentropy,
             optimizer='adam',
             #  metrics=[tf.keras.metrics.RootMeanSquaredError()])
-        metrics=['accuracy', tf.keras.metrics.MeanIoU(num_classes=20), tf.keras.metrics.IoU(num_classes=20, target_class_ids = [1]), tf.keras.metrics.IoU(num_classes=20, target_class_ids = [2]), tf.keras.metrics.IoU(num_classes=20, target_class_ids = [3])], run_eagerly=True, loss_weights=class_weights)
+        metrics=['accuracy', tf.keras.metrics.MeanIoU(num_classes=20),
+                    CustomIoU(classes=20, ignore=eval_ignore_list),
+                    CustomIoU(classes=20, ignore=eval_ignore_list, ind=[1], name='class1'),
+                    CustomIoU(classes=20, ignore=eval_ignore_list, ind=[2], name='class2'),
+                    CustomIoU(classes=20, ignore=eval_ignore_list, ind=[3], name='class3'),
+                    CustomIoU(classes=20, ignore=eval_ignore_list, ind=[4], name='class4'),
+                    CustomIoU(classes=20, ignore=eval_ignore_list, ind=[5], name='class5'),
+                    CustomIoU(classes=20, ignore=eval_ignore_list, ind=[6], name='class6')], run_eagerly=True, loss_weights=class_weights)
             # metrics=['accuracy', tf.keras.metrics.MeanIoU(num_classes=20), tf.keras.metrics.IoU(num_classes=20, target_class_ids = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13,14,15,16,17,18,19])], run_eagerly=True)
 
     # range_net_model.compile(loss=weighted_categorical_crossentropy(list(class_weights.values())),
