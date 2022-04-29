@@ -16,13 +16,7 @@ class CustomIoU(Metric):
         y_pred = tf.argmax(y_pred, axis=3) 
         y_true_row = tf.reshape(y_true, (-1))
         y_pred_row = tf.reshape(y_pred, (-1))
-        for i in range(20):
-            for j in range(20):
-                a = tf.math.equal(y_true_row, i)
-                b = tf.math.equal(y_pred_row, j)
-                an = tf.cast(tf.math.logical_and(a, b), tf.float32)
-                s = tf.math.reduce_sum( an )
-                self.confusion_matrix[i, j].assign((self.confusion_matrix[i, j] + s))
+        self.confusion_matrix = self.confusion_matrix + tf.math.confusion_matrix(y_true_row, y_pred_row, num_classes = self.classes, dtype=tf.float32)
 
     def result(self):
         return self.getIoU()
