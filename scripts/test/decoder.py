@@ -5,6 +5,7 @@ from tensorflow.keras.layers import Conv2D, Dropout, BatchNormalization, LeakyRe
 from tensorflow.keras.layers import Input, concatenate, UpSampling2D
 from tensorflow.keras.models import Model
 from tensorflow.keras import layers
+from PixelShuffle import PixelShuffle
 
 INPUT_DEPTH = 5
 INPUT_HEIGHT = 64
@@ -32,7 +33,7 @@ class BasicBlock(Model):
         y = self.conv2(y)
         y = self.bn2(y)
         y = self.relu2(y)
-        
+
         y += res
 
         return y
@@ -112,7 +113,9 @@ class Decoder(Model):
         layers = []
 
         if stride == 2:
-            layers.append(Conv2DTranspose(planes[1], kernel_size = [1, 4], strides = [1, 2], padding='same', data_format=self.data_format))
+            # layers.append(Conv2DTranspose(planes[1], kernel_size = [1, 4], strides = [1, 2], padding='same', data_format=self.data_format))
+            layers.append(PixelShuffle())
+            layers.append(Conv2D(planes[1], kernel_size = 3, padding='same', data_format=self.data_format))
         else:
             layers.append(Conv2D(planes[1], kernel_size = 3, padding='same', data_format=self.data_format))
         
