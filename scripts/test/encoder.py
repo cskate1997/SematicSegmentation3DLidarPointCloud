@@ -36,7 +36,7 @@ class BasicBlock(Model):
         return y
 
 class Encoder(Model):
-    def __init__(self):
+    def __init__(self, pixel_shuffle=False):
         super(Encoder, self).__init__()
 
         self.strides = [2, 2, 2, 2, 2]
@@ -44,6 +44,7 @@ class Encoder(Model):
         self.bn_d = 0.01
         self.data_format='channels_last' 
         self.feature_depth=1024
+        self.pixel_shuffle_flag = pixel_shuffle
 
         if self.data_format == 'channels_first':
             self.bn_axis = 1  
@@ -119,7 +120,10 @@ class Encoder(Model):
     def make_encoder_layer(self, planes, blocks, stride, bn_d=0.1):
         layers = []
 
-        layers.append(Conv2D(filters=planes[1], kernel_size=3, dilation_rate=1, strides=[stride, stride], padding='same', data_format=self.data_format, use_bias=False))
+        if self.pixel_shuffle_flag:
+            layers.append(Conv2D(filters=planes[1], kernel_size=3, dilation_rate=1, strides=[stride, stride], padding='same', data_format=self.data_format, use_bias=False))
+        else:
+            layers.append(Conv2D(filters=planes[1], kernel_size=3, dilation_rate=1, strides=[1, stride], padding='same', data_format=self.data_format, use_bias=False))
         layers.append(BatchNormalization(axis = self.bn_axis, momentum=self.bn_d))
         layers.append(LeakyReLU(0.1))
 
@@ -131,7 +135,7 @@ class Encoder(Model):
 if __name__ == '__main__':
     # tf.enable_eager_execution()
 
-    encoder = Encoder()
+    encoder = Encoder(pixel_shuffle=False)
 
     encoder.build(input_shape=(None, 64, 1024, 5))
     encoder.call(Input(shape=(64, 1024, 5)))

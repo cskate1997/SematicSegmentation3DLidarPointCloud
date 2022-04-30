@@ -41,13 +41,14 @@ class BasicBlock(Model):
 
 
 class Decoder(Model):
-    def __init__(self):
+    def __init__(self, pixel_shuffle=False):
         super(Decoder, self).__init__()
 
         self.strides = [2, 2, 2, 2, 2]
         self.bn_d = 0.01
         self.data_format='channels_last' 
         self.feature_depth=1024
+        self.pixel_shuffle_flag = pixel_shuffle
 
         if self.data_format == 'channels_first':
             self.bn_axis = 1  
@@ -61,9 +62,6 @@ class Decoder(Model):
         self.dec1 = self.make_decoder_layer([64, 32], bn_d=self.bn_d, stride=self.strides[4])
 
         self.dropout = Dropout(rate=0.01)
-
-        # self.dropout = Dropout(rate=0.01)
-        # self.conv = Conv2D(filters=20, kernel_size=3, strides=1, padding='same', data_format='channels_first')
 
     def call(self, x):
         skips = self.skips
@@ -113,9 +111,11 @@ class Decoder(Model):
         layers = []
 
         if stride == 2:
-            # layers.append(Conv2DTranspose(planes[1], kernel_size = [1, 4], strides = [1, 2], padding='same', data_format=self.data_format))
-            layers.append(PixelShuffle())
-            layers.append(Conv2D(planes[1], kernel_size = 3, padding='same', data_format=self.data_format))
+            if self.pixel_shuffle_flag:
+                layers.append(PixelShuffle())
+                layers.append(Conv2D(planes[1], kernel_size = 3, padding='same', data_format=self.data_format))
+            else:
+                layers.append(Conv2DTranspose(planes[1], kernel_size = [1, 4], strides = [1, 2], padding='same', data_format=self.data_format))
         else:
             layers.append(Conv2D(planes[1], kernel_size = 3, padding='same', data_format=self.data_format))
         
@@ -130,7 +130,7 @@ class Decoder(Model):
 if __name__ == '__main__':
     # tf.enable_eager_execution()
 
-    decoder = Decoder()
+    decoder = Decoder(pixel_shuffle=False)
     decoder.skips = {}
     decoder.os = 32
 
