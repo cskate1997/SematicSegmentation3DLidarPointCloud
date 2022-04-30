@@ -13,25 +13,17 @@ INPUT_HEIGHT = 64
 INPUT_WIDTH = 1024
 
 class RangeNetModel(Model):
-    def __init__(self, inp_shape=(None, 64, 1024, 5), rnn_flag=False):
+    def __init__(self, inp_shape=(None, 64, 1024, 5), rnn_flag=False, pixel_shuffle=False):
         super(RangeNetModel, self).__init__()
         # self.inp = Input(shape=inp_shape)
-        self.encoder = Encoder()
-        self.decoder = Decoder()
+        self.encoder = Encoder(pixel_shuffle=pixel_shuffle)
+        self.decoder = Decoder(pixel_shuffle=pixel_shuffle)
         self.semantic_head = SegmentationHead()
         self.softmax = Softmax(axis=3)
         self.rnn_flag = rnn_flag
 
 
-    def call(self, x):
-        # print("X Shape: ", x.shape, x)
-        # y = self.inp(x)
-        
-        # print("Input_Shape: ", x.shape)
-        # print(x, type(x),x[0])
-        # for i in x:
-        #     print(type(i), i, i[0])
-        
+    def call(self, x):        
         y = self.encoder(x)
         
         skips, os = self.encoder.get_skips()
@@ -70,7 +62,7 @@ if __name__ == '__main__':
     # fileName = "outputs/model_summary_pxl.txt"
     # sys.stdout = open(fileName, "w")
 
-    range_net_model = RangeNetModel()
+    range_net_model = RangeNetModel(rnn_flag=False, pixel_shuffle=False)
 
     range_net_model.build(input_shape=(None, 64, 1024, 5))
     range_net_model.call(Input(shape=(64, 1024, 5)))
