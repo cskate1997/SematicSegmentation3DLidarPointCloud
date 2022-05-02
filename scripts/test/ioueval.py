@@ -1,6 +1,8 @@
-from tokenize import Ignore
 import numpy as np
 import tensorflow as tf
+import sys
+
+from CustomIoU import *
 
 '''
 Reference: - 
@@ -8,9 +10,9 @@ https://stackoverflow.com/questions/31324218/scikit-learn-how-to-obtain-true-pos
 '''
 
 class iouEval:
-    def __init__(self, num_classes):
+    def __init__(self, num_classes, ignore_list):
         self.num_classes = num_classes
-        self.ignore = tf.Tensor(Ignore)
+        self.ignore = tf.Tensor(ignore_list)
         # Convert self.ignore tensor to long PENDING
         self.include = tf.Tensor([i for i in range(self.ignore) if i not in self.ignore])
         # Convert self.include tensor to long PENDING
@@ -71,22 +73,31 @@ def create_confusion_matrix(truth, prediction):
     confusion_matrix = np.zeros((len(classes), len(classes)))
     for i in range(len(classes)):
         for j in range(len(classes)):
+            # print("i : ", i, " j :",j)
             confusion_matrix[i,j] = np.sum( (truth == classes[i]) & (prediction == classes[j]) )
+            # print(confusion_matrix)
     return confusion_matrix
 
-
 if __name__ == "__main__":
-    a = np.random.randint(0,10,(64,1024))
+    sys.stdout
+    # a = np.random.randint(0,10,(64,1024))
+    a = np.zeros((10,10))
+    a[:10,:5] = 1
     print("a :\n", a)
-    b = np.random.randint(0,10,(64,1024))
+    # b = np.random.randint(0,10,(64,1024))
+    b = np.zeros((10,10))
+    b[:5, :5] = 1
     print("b :\n", b)
+
     conf = create_confusion_matrix(a,b)
+  
     print("Confusion Matrix:\n", conf)
     true_positives = np.diag(conf)
+    true_positives = np.atleast_2d(true_positives).T
     print("True+ve\n", true_positives)
-    false_positives = np.sum(conf, axis = 1) - true_positives
+    false_positives = np.sum(conf, axis = 1, keepdims=True) - true_positives
     print("False+ve\n", false_positives)
-    false_negatives = np.sum(conf, axis = 0) - true_positives
+    false_negatives = np.sum(conf, axis = 0, keepdims=True).T - true_positives
     print("False-ve\n", false_negatives)
     true_negatives = np.sum(conf) - (true_positives + false_positives + false_negatives)
     print("True-ve\n", true_negatives)
@@ -98,3 +109,7 @@ if __name__ == "__main__":
     print("IoU\n", iou_score)
     iou_mean = np.mean(iou_score)
     print("IoU Mean\n", iou_mean)    
+
+    whatever = CustomIoU(classes=2)
+    whatever.update_state(a,b)
+    print("IOU TF", whatever.result())
