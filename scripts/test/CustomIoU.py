@@ -3,15 +3,21 @@ import tensorflow as tf
 from tensorflow.keras.metrics import Metric
 
 class CustomIoU(Metric):
-    def __init__(self, name="c_iou", classes=20, ind=None, ignore=[], **kwargs):
+    def __init__(self, name="c_iou", classes=20, ind=None, ignore=[], weights=None, **kwargs):
         super(CustomIoU, self).__init__(name=name, **kwargs)
         self.classes = classes
         self.ignore = tf.constant(ignore)
         self.ind = ind
         self.include = tf.constant([n for n in range(self.classes) if n not in ignore])
+        if weights is not None:
+            self.weights_cust = tf.constant(weights, dtype=tf.float32)
+        else:
+            self.weights_cust = None
         self.reset()
 
     def update_state(self, y_true, y_pred, sample_weight=None):
+        if self.weights_cust is not None:
+            y_pred = y_pred * self.weights_cust
         y_true = tf.argmax(y_true, axis=3) 
         y_pred = tf.argmax(y_pred, axis=3) 
         y_true_row = tf.reshape(y_true, (-1))

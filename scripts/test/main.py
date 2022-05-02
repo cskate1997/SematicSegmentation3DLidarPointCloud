@@ -16,7 +16,7 @@ from CustomIoU import CustomIoU
 import json
 
 BATCH_SIZE = 2
-NUM_EPOCHS = 5
+NUM_EPOCHS = 10
 
 def test_visualize(multiple=False):
     ds.init_plot()
@@ -111,7 +111,7 @@ if __name__ == "__main__":
     print("="*24,"Dataset Ready","="*24)
 
 
-    range_net_model_single = RangeNetModel(rnn_flag=False, pixel_shuffle=False)
+    range_net_model_single = RangeNetModel(rnn_flag=False, pixel_shuffle=True)
     inputs = Input(shape=(64, 1024, 5))
     outputs = range_net_model_single(inputs)
     range_net_model = tf.keras.Model(inputs=inputs, outputs=outputs)
@@ -146,16 +146,20 @@ if __name__ == "__main__":
             CustomIoU(classes=20, ignore=eval_ignore_list, ind=[16], name='class16'),
             CustomIoU(classes=20, ignore=eval_ignore_list, ind=[17], name='class17'),
             CustomIoU(classes=20, ignore=eval_ignore_list, ind=[18], name='class18'),
-            CustomIoU(classes=20, ignore=eval_ignore_list, ind=[19], name='class19')
+            CustomIoU(classes=20, ignore=eval_ignore_list, ind=[19], name='class19'),
+            tf.keras.metrics.Precision(),
+            tf.keras.metrics.Recall()
             ],
-        run_eagerly=True, loss_weights=class_weights)
+        run_eagerly=True, 
+        loss_weights=class_weights
+        )
             # metrics=['accuracy', tf.keras.metrics.MeanIoU(num_classes=20), tf.keras.metrics.IoU(num_classes=20, target_class_ids = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13,14,15,16,17,18,19])], run_eagerly=True)
+
+    ## FOR TESTING or VISUALIZATION ##
+    range_net_model.load_weights('outputs/rnn_b1e10_srqt_loss_shuffle_off.hdf5') # Change RNN and Pixel Shuffle Flags accordingly!!!
 
     ## FOR TRAINING ##
     # train()
-
-    ## FOR TESTING or VISUALIZATION ##
-    range_net_model.load_weights('outputs/rangenet_b2e20.hdf5') # Change RNN and Pixel Shuffle Flags accordingly!!!
     
     ## FOR TESTING ##
     test()

@@ -53,7 +53,7 @@ class Dataset:
         for cls, ratio in self.yaml['content'].items():
             i = self.label_mapper(cls)
             weights[i] += ratio
-        weights = 1 / (weights + 0.001)
+        weights = 1 / np.sqrt(weights + 0.001)
         weights[0] = 0
         return weights
 
