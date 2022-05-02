@@ -5,7 +5,7 @@ from tensorflow.keras.layers import Conv2D, Dropout, BatchNormalization, LeakyRe
 from tensorflow.keras.layers import Input, concatenate, UpSampling2D
 from tensorflow.keras.models import Model
 from tensorflow.keras import layers
-from PixelShuffle import PixelShuffle
+from models.PixelShuffle import PixelShuffle
 
 INPUT_DEPTH = 5
 INPUT_HEIGHT = 64

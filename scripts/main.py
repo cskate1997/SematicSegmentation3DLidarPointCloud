@@ -2,8 +2,8 @@
 # os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 
 import sys
-from rangenet import RangeNetModel
-from pcd_dataset import Dataset
+from models.rangenet import RangeNetModel
+from utils.pcd_dataset import Dataset
 from matplotlib import pyplot as plt
 import tensorflow as tf
 from tensorflow.keras.optimizers import SGD
@@ -12,7 +12,7 @@ from tensorflow.keras.losses import categorical_crossentropy
 from tensorflow.keras.layers import Input
 import time
 import numpy as np
-from CustomIoU import CustomIoU
+from utils.CustomIoU import CustomIoU
 import json
 
 BATCH_SIZE = 2
@@ -156,13 +156,13 @@ if __name__ == "__main__":
             # metrics=['accuracy', tf.keras.metrics.MeanIoU(num_classes=20), tf.keras.metrics.IoU(num_classes=20, target_class_ids = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13,14,15,16,17,18,19])], run_eagerly=True)
 
     ## FOR TESTING or VISUALIZATION ##
-    range_net_model.load_weights('outputs/rnn_b1e10_srqt_loss_shuffle_off.hdf5') # Change RNN and Pixel Shuffle Flags accordingly!!!
+    # range_net_model.load_weights('outputs/rnn_b1e10_srqt_loss_shuffle_off.hdf5') # Change RNN and Pixel Shuffle Flags accordingly!!!
 
     ## FOR TRAINING ##
-    # train()
+    train()
     
     ## FOR TESTING ##
-    test()
+    # test()
 
     ## FOR VISUALIZATION ##
     # visualize_multiple = False

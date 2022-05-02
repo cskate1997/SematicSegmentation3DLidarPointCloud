@@ -4,9 +4,9 @@ import tensorflow as tf
 from tensorflow.keras.layers import Softmax, Input
 from tensorflow.keras.models import Model
 
-from segmentation_head import SegmentationHead
-from encoder import Encoder
-from decoder import Decoder
+from models.segmentation_head import SegmentationHead
+from models.encoder import Encoder
+from models.decoder import Decoder
 
 INPUT_DEPTH = 5
 INPUT_HEIGHT = 64

@@ -4,7 +4,7 @@ import sys
 import os
 from math import radians, pi
 import numpy as np
-from read_convert_save_view import read_bin_as_array, read_labels
+from utils.read_convert_save_view import read_bin_as_array, read_labels
 from matplotlib import pyplot as plt
 import yaml
 
