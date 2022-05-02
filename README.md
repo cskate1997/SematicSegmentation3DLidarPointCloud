@@ -6,7 +6,7 @@
 
 Master of Science in Robotics Engineering
 
-### [Link to Report]
+#### [Link to Report](./CS541_Group7_Final_Project_Report.pdf)
 
 --------------------------------------------------------------
 
