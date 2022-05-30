@@ -9,9 +9,7 @@ Master of Science in Robotics Engineering at [Worcester Polytechnic Institute](h
 - [Bhushan Ashok Rane](https://github.com/ranebhushan)
 - [Aniket Manish Patil](https://github.com/aniketmpatil)
 
-#### [Project Report](./CS541_Group7_Final_Project_Report.pdf)
-
---------------------------------------------------------------
+[Project Report](./CS541_Group7_Final_Project_Report.pdf)
 
 ## Requirements:
 
@@ -25,8 +23,6 @@ Master of Science in Robotics Engineering at [Worcester Polytechnic Institute](h
 
 5. Pillow
 
---------------------------------------------------------------
-
 ## Dataset - Semantic KITTI
 
 Download the Velodyne sensor data and the Label data folders, and place in the `dataset` folder in the form as mentioned on the [Semantic KITTI website](http://www.semantic-kitti.org/dataset.html#overview).
@@ -37,15 +33,13 @@ Download the Velodyne sensor data and the Label data folders, and place in the `
 
 We will require the path of this `dataset` folder as a argument to the run command.
 
---------------------------------------------------------------
-
-## How to run the code:
+## Usage Guidelines:
 
 Go to the parent folder of this repo, that is, [semantic_segmentation](.) and enter the command:
-  ```
-  python3 scripts/main.py -d **path_to_dataset_folder**
-  ```
+```
+python3 scripts/main.py -d **path_to_dataset_folder**
+```
 
-----------------------
 ## References
+
 1. A. Milioto and I. Vizzo and J. Behley and C. Stachniss, [RangeNet++: Fast and Accurate LiDAR Semantic Segmentation](http://www.ipb.uni-bonn.de/wp-content/papercite-data/pdf/milioto2019iros.pdf)
