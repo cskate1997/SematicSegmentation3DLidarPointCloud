@@ -1,12 +1,15 @@
 # Semantic Segmentation of LiDAR Point Cloud for Autonomous Vehicles
 
-### *CS541: Deep Learning - [Worcester Polytechnic Institute](https://www.wpi.edu/), Spring 2022*
+Course Project for CS541 - Deep Learning (Spring 2022)
 
-### Members: [Chinmay Madhukar Todankar](https://github.com/chinmaytodankar), [Bhushan Ashok Rane](https://github.com/ranebhushan), [Aniket Manish Patil](https://github.com/aniketmpatil)
+Master of Science in Robotics Engineering at [Worcester Polytechnic Institute](https://www.wpi.edu/)
 
-Master of Science in Robotics Engineering
+### Team Members
+- [Chinmay Madhukar Todankar](https://github.com/chinmaytodankar)
+- [Bhushan Ashok Rane](https://github.com/ranebhushan)
+- [Aniket Manish Patil](https://github.com/aniketmpatil)
 
-#### [Link to Report](./CS541_Group7_Final_Project_Report.pdf)
+#### [Project Report](./CS541_Group7_Final_Project_Report.pdf)
 
 --------------------------------------------------------------
 
