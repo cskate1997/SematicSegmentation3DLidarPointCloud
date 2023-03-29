@@ -9,8 +9,6 @@ Master of Science in Robotics Engineering at [Worcester Polytechnic Institute](h
 - [Bhushan Ashok Rane](https://github.com/ranebhushan)
 - [Aniket Manish Patil](https://github.com/aniketmpatil)
 
-[Project Report](./CS541_Group7_Final_Project_Report.pdf)
-
 ## Requirements:
 
 1. CUDA Toolkit + GPU drivers
