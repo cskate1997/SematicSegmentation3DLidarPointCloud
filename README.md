@@ -13,7 +13,7 @@ Master of Science in Robotics Engineering at [Worcester Polytechnic Institute](h
 ## Requirements:
 
 1. CUDA Toolkit + GPU drivers
-2. [Tensorflow](https://www.tensorflow.org/install)
+2. <a href="https://www.tensorflow.org/install" target="_blank">Tensorflow</a>
 3. Numpy
 4. Matplotlib
 5. Pillow
