@@ -9,16 +9,13 @@ Master of Science in Robotics Engineering at [Worcester Polytechnic Institute](h
 - [Bhushan Ashok Rane](https://github.com/ranebhushan)
 - [Aniket Manish Patil](https://github.com/aniketmpatil)
 
+
 ## Requirements:
 
 1. CUDA Toolkit + GPU drivers
-
 2. [Tensorflow](https://www.tensorflow.org/install)
-
 3. Numpy
-
 4. Matplotlib
-
 5. Pillow
 
 ## Dataset - Semantic KITTI
@@ -26,7 +23,6 @@ Master of Science in Robotics Engineering at [Worcester Polytechnic Institute](h
 Download the Velodyne sensor data and the Label data folders, and place in the `dataset` folder in the form as mentioned on the [Semantic KITTI website](http://www.semantic-kitti.org/dataset.html#overview).
 
 1. [Download](http://www.cvlibs.net/download.php?file=data_odometry_velodyne.zip) Point Cloud Data
-
 2. [Download](http://www.semantic-kitti.org/assets/data_odometry_labels.zip) Label Data
 
 We will require the path of this `dataset` folder as a argument to the run command.
