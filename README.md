@@ -1,6 +1,6 @@
 # Semantic Segmentation of LiDAR Point Cloud for Autonomous Vehicles
 
-Course Project for CS541 - Deep Learning (Spring 2022)
+Course Project for [CS541 - Deep Learning](https://www.wpi.edu/academics/calendar-courses/course-descriptions/3776/computer-science#CS-541) (Spring 2022)
 
 Master of Science in Robotics Engineering at [Worcester Polytechnic Institute](https://www.wpi.edu/)
 
@@ -9,23 +9,25 @@ Master of Science in Robotics Engineering at [Worcester Polytechnic Institute](h
 - [Bhushan Ashok Rane](https://github.com/ranebhushan)
 - [Aniket Manish Patil](https://github.com/aniketmpatil)
 
+## Project Description
 
-## Requirements:
+### Dependencies
 
-1. CUDA Toolkit + GPU drivers
-2. [Tensorflow](https://www.tensorflow.org/install)
-3. Numpy
-4. Matplotlib
-5. Pillow
+- [NVIDIA CUDA Toolkit](https://developer.nvidia.com/cuda-toolkit)
+- [NVIDIA CuDNN](https://developer.nvidia.com/cudnn)
+- [Tensorflow](https://www.tensorflow.org/install)
+- NumPy
+- Matplotlib
+- Pillow
 
-## Dataset - Semantic KITTI
+### Dataset - Semantic KITTI
 
-Download the Velodyne sensor data and the Label data folders, and place in the `dataset` folder in the form as mentioned on the [Semantic KITTI website](http://www.semantic-kitti.org/dataset.html#overview).
+Download the Velodyne Sensor data and Label data, and place in the `dataset` folder in the form as mentioned on the [Semantic KITTI website](http://www.semantic-kitti.org/dataset.html#overview).
 
-1. [Download](http://www.cvlibs.net/download.php?file=data_odometry_velodyne.zip) Point Cloud Data
-2. Download Labels Data -> Save this link -> http://www.semantic-kitti.org/assets/data_odometry_labels.zip
+- [Download](http://www.cvlibs.net/download.php?file=data_odometry_velodyne.zip) Point Cloud Data
+- Download Labels Data -> Save this link -> http://www.semantic-kitti.org/assets/data_odometry_labels.zip
 
-We will require the path of this `dataset` folder as a argument to the run command.
+The path of this `dataset` folder will be required as a argument to the run the entire pipeline.
 
 ## Usage Guidelines:
 
