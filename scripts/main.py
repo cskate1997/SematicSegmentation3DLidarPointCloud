@@ -16,7 +16,7 @@ from utils.CustomIoU import CustomIoU
 import json
 
 BATCH_SIZE = 2
-NUM_EPOCHS = 10
+NUM_EPOCHS = 50
 
 def test_visualize(multiple=False):
     ds.init_plot()
@@ -35,12 +35,17 @@ def test_visualize(multiple=False):
             y_hat_rnn = y_hat_rnn.numpy()
             y_hat_rnn = y_hat_rnn.reshape(64,1024)
             ds.show(y_hat, y_hat_rnn, y.numpy().reshape(64,1024))
+            # ds.store_imgs(y_hat, y_hat_rnn, y.numpy().reshape(64,1024))
         else:
             ds.show(y_hat, y.numpy().reshape(64,1024))
-
+            # ds.store_imgs(y_hat, y.numpy().reshape(64,1024))
 
 def test():
+    tic = time.time()
+    print('Before time :', tic)
     range_net_model.evaluate(test_dataset)
+    toc = time.time()
+    print('After time :', toc)
 
 def train():
     checkpointer = tf.keras.callbacks.ModelCheckpoint(filepath='outputs/rangenet.weights.checkpoint-'+time.strftime("%Y_%m_%d-%H:%M:%S")+'.hdf5', save_weights_only=True, verbose=1,save_best_only=True)
@@ -66,7 +71,6 @@ def weighted_categorical_crossentropy(weights):
         return loss
     return loss
 
-
 if __name__ == "__main__":
     # tf.enable_eager_execution()
     if (len(sys.argv) != 3):
@@ -77,109 +81,130 @@ if __name__ == "__main__":
     # cpu = [device for device in devices if device.device_type.lower() == 'cpu']
     # devices = [device for device in devices if device.device_type.lower() == 'gpu']
     # num_gpu = len(devices)
-    num_gpu = 1
+    # num_gpu = 1
     # print(cpu)
-    print("GPUs Available: ", num_gpu)
-    print("="*24,"Initializing Dataset","="*24)
-    ind = sys.argv.index("-d")
-    path = sys.argv[ind + 1]
-    ds = Dataset(path, 'config/semantic-kitti.yaml')
-    sequences = ds.get_sequences()
-    print("Sequences: ", sequences)
-    ds.init_train_data(sequences[1:8])
-    print("Training Sequences: ", ds.train_dirs)
-    ds.init_valid_data(sequences[8:10])
-    print("Validation Sequences: ", ds.valid_dirs)
-    ds.init_test_data(sequences[0:1])
-    print("Testing Sequences: ", ds.test_dirs)
-    dataset = ds.get_train_data()
-    valid_dataset = ds.get_valid_data()
-    test_dataset = ds.get_test_data()
-    dataset = dataset.repeat(NUM_EPOCHS)
-    # dataset = dataset.shuffle(100)
-    dataset = dataset.batch(BATCH_SIZE)
-    dataset = dataset.prefetch(1)
-    data_iter = dataset
-    # valid_dataset = valid_dataset.repeat(NUM_EPOCHS)
-    # dataset = dataset.shuffle(100)
-    valid_dataset = valid_dataset.batch(BATCH_SIZE)
-    valid_dataset = valid_dataset.prefetch(1)
-    # test_dataset = test_dataset.repeat(NUM_EPOCHS)
-    # dataset = dataset.shuffle(100)
-    test_dataset = test_dataset.batch(1)
-    test_dataset = test_dataset.prefetch(1)
-    print("="*24,"Dataset Ready","="*24)
+    # print("GPUs Available: ", num_gpu)
 
-
-    range_net_model_single = RangeNetModel(rnn_flag=False, pixel_shuffle=True)
-    inputs = Input(shape=(64, 1024, 5))
-    outputs = range_net_model_single(inputs)
-    range_net_model = tf.keras.Model(inputs=inputs, outputs=outputs)
-
-    class_weights = ds.get_class_weights()
+    print("tensorflow version", tf.__version__, tf.version.VERSION)
+    print("tf.config.list_physical_devices() :",tf.config.list_physical_devices())
+    print("tf.config.list_physical_devices('CPU') :",tf.config.list_physical_devices('CPU'))
+    print("tf.config.list_physical_devices('GPU') :",tf.config.list_physical_devices('GPU'))
+    print("tf.test.is_gpu_available() :", tf.test.is_gpu_available())
+    print("tf.test.is_gpu_available(cuda_only=True) =", tf.test.is_gpu_available(cuda_only=True))
+    print("tf.test.is_gpu_available(True, (3,0)) :", tf.test.is_gpu_available(True, (3,0)))
     
-    
-    eval_ignore_list = [0]
+    gpus = tf.config.list_physical_devices('GPU')
+    if gpus:
+        try:
+            # Set GPU memory growth
+            for gpu in gpus:
+                tf.config.experimental.set_memory_growth(gpu, True)
+            print("GPU memory growth set successfully")
+        except RuntimeError as e:
+            print("Error setting GPU memory growth:", e)
 
-    optimizer = SGD(learning_rate=0.005, momentum=0.9, decay=0.0001)
-    
-    range_net_model.compile(loss=categorical_crossentropy,
-        optimizer='adam',
-        metrics=['accuracy', tf.keras.metrics.MeanIoU(num_classes=20),
-            # tf.keras.metrics.RootMeanSquaredError(),
-            CustomIoU(classes=20, ignore=eval_ignore_list),
-            CustomIoU(classes=20, ignore=eval_ignore_list, ind=[1], name='class1'),
-            CustomIoU(classes=20, ignore=eval_ignore_list, ind=[2], name='class2'),
-            CustomIoU(classes=20, ignore=eval_ignore_list, ind=[3], name='class3'),
-            CustomIoU(classes=20, ignore=eval_ignore_list, ind=[4], name='class4'),
-            CustomIoU(classes=20, ignore=eval_ignore_list, ind=[5], name='class5'),
-            CustomIoU(classes=20, ignore=eval_ignore_list, ind=[6], name='class6'),
-            CustomIoU(classes=20, ignore=eval_ignore_list, ind=[7], name='class7'),
-            CustomIoU(classes=20, ignore=eval_ignore_list, ind=[8], name='class8'),
-            CustomIoU(classes=20, ignore=eval_ignore_list, ind=[9], name='class9'),
-            CustomIoU(classes=20, ignore=eval_ignore_list, ind=[10], name='class10'),
-            CustomIoU(classes=20, ignore=eval_ignore_list, ind=[11], name='class11'),
-            CustomIoU(classes=20, ignore=eval_ignore_list, ind=[12], name='class12'),
-            CustomIoU(classes=20, ignore=eval_ignore_list, ind=[13], name='class13'),
-            CustomIoU(classes=20, ignore=eval_ignore_list, ind=[14], name='class14'),
-            CustomIoU(classes=20, ignore=eval_ignore_list, ind=[15], name='class15'),
-            CustomIoU(classes=20, ignore=eval_ignore_list, ind=[16], name='class16'),
-            CustomIoU(classes=20, ignore=eval_ignore_list, ind=[17], name='class17'),
-            CustomIoU(classes=20, ignore=eval_ignore_list, ind=[18], name='class18'),
-            CustomIoU(classes=20, ignore=eval_ignore_list, ind=[19], name='class19'),
-            tf.keras.metrics.Precision(),
-            tf.keras.metrics.Recall()
-            ],
-        run_eagerly=True, 
-        loss_weights=class_weights
-        )
-            # metrics=['accuracy', tf.keras.metrics.MeanIoU(num_classes=20), tf.keras.metrics.IoU(num_classes=20, target_class_ids = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13,14,15,16,17,18,19])], run_eagerly=True)
+    # Specify GPU device placement
+    with tf.device('/device:GPU:0'):
+        
+        print("Is TensorFlow using GPU?: ", tf.test.is_gpu_available())
+        print("="*24,"Initializing Dataset","="*24)
+        ind = sys.argv.index("-d")
+        path = sys.argv[ind + 1]
+        ds = Dataset(path, 'config/semantic-kitti.yaml')
+        sequences = ds.get_sequences()
+        print("Sequences: ", sequences)
+        ds.init_train_data(sequences[1:8])
+        print("Training Sequences: ", ds.train_dirs)
+        ds.init_valid_data(sequences[8:10])
+        print("Validation Sequences: ", ds.valid_dirs)
+        ds.init_test_data(sequences[0:1])
+        print("Testing Sequences: ", ds.test_dirs)
+        dataset = ds.get_train_data()
+        valid_dataset = ds.get_valid_data()
+        test_dataset = ds.get_test_data()
+        dataset = dataset.repeat(NUM_EPOCHS)
+        # dataset = dataset.shuffle(100)
+        dataset = dataset.batch(BATCH_SIZE)
+        dataset = dataset.prefetch(1)
+        data_iter = dataset
+        # valid_dataset = valid_dataset.repeat(NUM_EPOCHS)
+        # dataset = dataset.shuffle(100)
+        valid_dataset = valid_dataset.batch(BATCH_SIZE)
+        valid_dataset = valid_dataset.prefetch(1)
+        # test_dataset = test_dataset.repeat(NUM_EPOCHS)
+        # dataset = dataset.shuffle(100)
+        test_dataset = test_dataset.batch(1)
+        test_dataset = test_dataset.prefetch(1)
+        print("="*24,"Dataset Ready","="*24)
 
-    ## FOR TESTING or VISUALIZATION ##
-    # range_net_model.load_weights('outputs/rnn_b1e10_srqt_loss_shuffle_off.hdf5') # Change RNN and Pixel Shuffle Flags accordingly!!!
+        range_net_model_single = RangeNetModel(rnn_flag=False, pixel_shuffle=True)
+        inputs = Input(shape=(64, 1024, 5))
+        outputs = range_net_model_single(inputs)
+        range_net_model = tf.keras.Model(inputs=inputs, outputs=outputs)
 
-    ## FOR TRAINING ##
-    train()
-    
-    ## FOR TESTING ##
-    # test()
+        class_weights = ds.get_class_weights()
+        
+        eval_ignore_list = [0]
 
-    ## FOR VISUALIZATION ##
-    # visualize_multiple = False
-    # if visualize_multiple:
-    #     range_net_model_single_2 = RangeNetModel(rnn_flag=False, pixel_shuffle=True)
-    #     inputs = Input(shape=(64, 1024, 5))
-    #     outputs = range_net_model_single_2(inputs)
-    #     range_net_model_2 = tf.keras.Model(inputs=inputs, outputs=outputs)
+        optimizer = SGD(learning_rate=0.005, momentum=0.9, decay=0.0001)
+        
+        range_net_model.compile(loss=categorical_crossentropy,
+            optimizer='adam',
+            metrics=['accuracy', tf.keras.metrics.MeanIoU(num_classes=20),
+                # tf.keras.metrics.RootMeanSquaredError(),
+                CustomIoU(classes=20, ignore=eval_ignore_list),
+                CustomIoU(classes=20, ignore=eval_ignore_list, ind=[1], name='class1'),
+                CustomIoU(classes=20, ignore=eval_ignore_list, ind=[2], name='class2'),
+                CustomIoU(classes=20, ignore=eval_ignore_list, ind=[3], name='class3'),
+                CustomIoU(classes=20, ignore=eval_ignore_list, ind=[4], name='class4'),
+                CustomIoU(classes=20, ignore=eval_ignore_list, ind=[5], name='class5'),
+                CustomIoU(classes=20, ignore=eval_ignore_list, ind=[6], name='class6'),
+                CustomIoU(classes=20, ignore=eval_ignore_list, ind=[7], name='class7'),
+                CustomIoU(classes=20, ignore=eval_ignore_list, ind=[8], name='class8'),
+                CustomIoU(classes=20, ignore=eval_ignore_list, ind=[9], name='class9'),
+                CustomIoU(classes=20, ignore=eval_ignore_list, ind=[10], name='class10'),
+                CustomIoU(classes=20, ignore=eval_ignore_list, ind=[11], name='class11'),
+                CustomIoU(classes=20, ignore=eval_ignore_list, ind=[12], name='class12'),
+                CustomIoU(classes=20, ignore=eval_ignore_list, ind=[13], name='class13'),
+                CustomIoU(classes=20, ignore=eval_ignore_list, ind=[14], name='class14'),
+                CustomIoU(classes=20, ignore=eval_ignore_list, ind=[15], name='class15'),
+                CustomIoU(classes=20, ignore=eval_ignore_list, ind=[16], name='class16'),
+                CustomIoU(classes=20, ignore=eval_ignore_list, ind=[17], name='class17'),
+                CustomIoU(classes=20, ignore=eval_ignore_list, ind=[18], name='class18'),
+                CustomIoU(classes=20, ignore=eval_ignore_list, ind=[19], name='class19'),
+                tf.keras.metrics.Precision(),
+                tf.keras.metrics.Recall()
+                ],
+            run_eagerly=True, 
+            loss_weights=class_weights
+            )
+                # metrics=['accuracy', tf.keras.metrics.MeanIoU(num_classes=20), tf.keras.metrics.IoU(num_classes=20, target_class_ids = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13,14,15,16,17,18,19])], run_eagerly=True)
 
-    #     optimizer = SGD(learning_rate=0.005, momentum=0.9, decay=0.0001)
-    #     # loss = CategoricalCrossentropy()
-    #     range_net_model_2.compile(loss=categorical_crossentropy,
-    #             optimizer=optimizer,
-    #             #  metrics=[tf.keras.metrics.RootMeanSquaredError()])
-    #             metrics=['accuracy', tf.keras.metrics.MeanIoU(num_classes=20)], run_eagerly=True)
+        ## FOR TESTING or VISUALIZATION ##
+        range_net_model.load_weights('outputs/rangenet.weights-2023_04_14-15:21:13.hdf5') # Change RNN and Pixel Shuffle Flags accordingly!!!
 
-    #     range_net_model_2.load_weights('outputs/rangenet_b2e5.hdf5')
-    #     test_visualize(multiple=visualize_multiple)
-    # else:
-    #     test_visualize()
+        ## FOR TRAINING ##
+        # train()
+        
+        ## FOR TESTING ##
+        test()
+
+        ## FOR VISUALIZATION ##
+        visualize_multiple = False
+        if visualize_multiple:
+            range_net_model_single_2 = RangeNetModel(rnn_flag=False, pixel_shuffle=True)
+            inputs = Input(shape=(64, 1024, 5))
+            outputs = range_net_model_single_2(inputs)
+            range_net_model_2 = tf.keras.Model(inputs=inputs, outputs=outputs)
+
+            optimizer = SGD(learning_rate=0.005, momentum=0.9, decay=0.0001)
+            # loss = CategoricalCrossentropy()
+            range_net_model_2.compile(loss=categorical_crossentropy,
+                    optimizer=optimizer,
+                    #  metrics=[tf.keras.metrics.RootMeanSquaredError()])
+                    metrics=['accuracy', tf.keras.metrics.MeanIoU(num_classes=20)], run_eagerly=True)
+
+            range_net_model_2.load_weights('/home/cskate/Lidar/semantic_segmentation/outputs/rangenet.weights-2023_04_07-13:43:03.hdf5')
+            test_visualize(multiple=visualize_multiple)
+        else:
+            test_visualize()

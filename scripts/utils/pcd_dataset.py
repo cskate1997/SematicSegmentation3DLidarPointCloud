@@ -7,6 +7,7 @@ import numpy as np
 from utils.read_convert_save_view import read_bin_as_array, read_labels
 from matplotlib import pyplot as plt
 import yaml
+import datetime
 
 FOV_DOWN = -24.8
 FOV_UP = 2
@@ -24,6 +25,7 @@ class Dataset:
         self.learning_map = self.yaml['learning_map']
         self.sequences = self.get_sequences()
         self.color_map = self.yaml['color_map']
+        self.image_count = 0
         # # print(type(self.learning_map_inv))
         # self.plt1 = plt.figure()
         # self.ax1 = self.plt1.add_subplot(111)
@@ -106,8 +108,10 @@ class Dataset:
         self.im1 = self.ax1.imshow(rgb_img)
         self.plt1.canvas.draw()
         self.plt1.canvas.flush_events()
-        plt.show(block=False)
-        plt.pause(0.03)
+        self.image_count += 1
+        plt.savefig(f'images/image{self.image_count}.png')
+        # plt.show(block=False)
+        # plt.pause(0.03)
 
 
     def parse_function(self, filename):
