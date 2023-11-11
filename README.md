@@ -1,8 +1,5 @@
-# SematicSegmentation3DLidarPointCloud
-Semantic Segmentation for full 3D Lidar point cloud in real time.
-
 # Semantic Segmentation of LiDAR Point Cloud for Autonomy.
-
+Semantic Segmentation for full 3D Lidar point cloud in real time.
 Master of Science in Robotics Engineering at [Worcester Polytechnic Institute](https://www.wpi.edu/)
 
 ## Project Description
